@@ -1,52 +1,77 @@
 GENOME_VERSION = "GRCh38"
-ENSEMBL_VERSION = "GRCh38.96"
+ENSEMBL_VERSION = "96"
+GENEMODEL_VERSION = GENOME_VERSION + "." + ENSEMBL_VERSION
 GENOME_FA = f"ensembl/Homo_sapiens.{GENOME_VERSION}.dna.primary_assembly.fa"
-ENSEMBL_GFF = f"ensembl/Homo_sapiens.{ENSEMBL_VERSION}.gff3"
-REF_PREFIX = f"ensembl/Homo_sapiens.{ENSEMBL_VERSION}/RsemStarReference."
+ENSEMBL_GFF = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}.gff3"
+REF_PREFIX = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}/RsemStarReference"
+REF_FOLDER = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}/"
 
 configfile: "config.yaml"
 
 rule all:
-    input:
-        expand("output/{fq}.genes.results", fq=config["fq"])
+    input: "output/counts.tsv"
 
-rule download_ensembl_references:
+# rule clean:
+#     shell: "rm -rf ensembl output"
+
+rule download_ensembl_genome:
     output:
         gfa=GENOME_FA,
-        gff=ENSEMBL_GFF,
-    log: "ensembl/downloads.log"
+    log: "ensembl/downloads_fa.log"
     shell:
-        "(wget -O - ftp://ftp.ensembl.org/pub/release-81//fasta/homo_sapiens/dna/Homo_sapiens.{GENOME_VERSION}.dna.primary_assembly.fa.gz | "
-        "gunzip -c > {output.gfa} && "
-        "wget -O - ftp://ftp.ensembl.org/pub/release-81/gff3/homo_sapiens/Homo_sapiens.{ENSEMBL_VERSION}.gff3.gz | "
+        "(wget -O - ftp://ftp.ensembl.org/pub/release-81//fasta/homo_sapiens/dna/Homo_sapiens." + GENOME_VERSION + ".dna.primary_assembly.fa.gz | "
+        "gunzip -c > {output.gfa}) 2> {log}"
+
+rule download_ensembl_genemodel:
+    output:
+        gff=ENSEMBL_GFF,
+    log: "ensembl/download_gff.log"
+    shell:
+        "(wget -O - ftp://ftp.ensembl.org/pub/release-" + ENSEMBL_VERSION + "/gff3/homo_sapiens/Homo_sapiens." + GENEMODEL_VERSION + ".gff3.gz | "
         "gunzip -c > {output.gff}) 2> {log}"
+
+rule fix_gff3_for_rsem:
+    input: ENSEMBL_GFF
+    output: ENSEMBL_GFF + ".fix.gff3"
+    shell: "python scripts/fix_gff3_for_rsem.py {input} {output}"
 
 rule rsem_star_genome:
     input:
         efa="data/ERCC.fa",
         gfa=GENOME_FA,
-        gff=ENSEMBL_GFF
+        gff=ENSEMBL_GFF + ".fix.gff3"
     output:
-        suffix = REF_PREFIX + "SA"
-    threads: 12
+        REF_PREFIX + ".gtf",
+        suffix = REF_FOLDER + "SA"
+    threads: 99
     resources: mem_mb=60000
+    log: "ensembl/prepare-reference.log"
     shell:
-        "rsem-prepare-reference --num-threads {threads} --star"
-        " --gff3 {input.gff} {input.efa} {input.gfa} " + REF_PREFIX
+        "(rsem-prepare-reference --num-threads {threads} --star"
+        " --gff3 {input.gff} \"{input.efa}\",\"{input.gfa}\" " + REF_PREFIX +
+        ") 2> {log}"
 
 rule rsem_star_align:
     input:
-        suffix=REF_PREFIX + "SA",
-        fq=expand("{fq}", fq=config["fq"]) #single end only
+        suffix=REF_FOLDER + "SA",
+        fastq=glob_wildcards("input/*.fastq.gz") #single end only
     output:
         "output/{fq}.isoforms.results",
         "output/{fq}.genes.results",
-        "output/{fq}.transcript.bam",
         "output/{fq}.time",
-        "output/{fq}.stat",
-    log:
-    resources: mem_mb=60000
+        directory("output/{fq}.stat"),
+    resources: mem_mb=50000
     threads: 12
+    log: "output/{fq}calculate-expression.log"
     shell:
-        "rsem-calculate-expression --no-bam-output --time --calc-ci --star"
-        " --num-threads {threads} {input.fq} " + REF_PREFIX
+        "(rsem-calculate-expression --no-bam-output --time --star" # --calc-ci" probably not using confidence intervals here
+        " --num-threads {threads} --star-gzipped-read-file input/{wildcards.fq} " + REF_PREFIX + " output/{wildcards.fq}) &> {log}"
+
+rule make_rsem_dataframe:
+    input: glob_wildcards("input/*.fastq.gz")
+    output:
+        counts="output/counts.tsv",
+        tpm="output/tpm.tsv"
+    shell:
+        "python scripts/make_rsem_dataframe.py 4 {output.counts} {input} && "
+        "python scripts/make_rsem_dataframe.py 5 {output.tpm} {input}"

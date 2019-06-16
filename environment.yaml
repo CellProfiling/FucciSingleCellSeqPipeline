@@ -9,3 +9,5 @@ dependencies:
   - git
   - fastqc
   - skewer
+  - star
+  - numpy

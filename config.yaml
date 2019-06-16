@@ -1,1 +1,1 @@
-fq: ["input/A1_R1.fastq.gz", "input/A2_R1.fastq.gz"]
+fq: ["A10_R1.fastq.gz", "A12_R1.fastq.gz"]
