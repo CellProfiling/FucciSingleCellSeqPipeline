@@ -6,7 +6,9 @@ ENSEMBL_GFF = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}.gff3"
 REF_PREFIX = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}/RsemStarReference"
 REF_FOLDER = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}/"
 
-configfile: "config.yaml"
+FQ_FOLDER = "/mnt/e/ProjectsActive/tonsil/data_spritzsnake/trimmed/"
+# (FQ_PREFIXES,) = glob_wildcards(FQ_FOLDER + "{fq}.fastq.gz")
+(FQ_PREFIXES,) = glob_wildcards(FQ_FOLDER + "{fq}.fastq.gz")
 
 rule all:
     input: "output/counts.tsv"
@@ -54,7 +56,7 @@ rule rsem_star_genome:
 rule rsem_star_align:
     input:
         suffix=REF_FOLDER + "SA",
-        fastq=glob_wildcards("input/*.fastq.gz") #single end only
+        fastq=expand(FQ_FOLDER + "{fq}.fastq.gz", fq=FQ_PREFIXES) #single end only
     output:
         "output/{fq}.isoforms.results",
         "output/{fq}.genes.results",
@@ -65,13 +67,18 @@ rule rsem_star_align:
     log: "output/{fq}calculate-expression.log"
     shell:
         "(rsem-calculate-expression --no-bam-output --time --star" # --calc-ci" probably not using confidence intervals here
-        " --num-threads {threads} --star-gzipped-read-file input/{wildcards.fq} " + REF_PREFIX + " output/{wildcards.fq}) &> {log}"
+        " --num-threads {threads} --star-gzipped-read-file " + FQ_FOLDER + "{wildcards.fq}.fastq.gz " + REF_PREFIX + " output/{wildcards.fq}) &> {log}"
 
 rule make_rsem_dataframe:
-    input: glob_wildcards("input/*.fastq.gz")
+    input: expand("output/{fq}.genes.results", fq=FQ_PREFIXES)
     output:
         counts="output/counts.tsv",
         tpm="output/tpm.tsv"
     shell:
+        "echo \"python scripts/make_rsem_dataframe.py 4 {output.counts} {input}\" && "
         "python scripts/make_rsem_dataframe.py 4 {output.counts} {input} && "
         "python scripts/make_rsem_dataframe.py 5 {output.tpm} {input}"
+
+# 190616: This isn't working. Nothing is getting aligned even in cases where I know there
+# should be good alignments. Should I align with STAR and then import the alignments for quant
+# within RSEM?
