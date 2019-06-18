@@ -9,5 +9,6 @@ dependencies:
   - git
   - fastqc
   - skewer
-  - star
+  - star =2.7.0f-0
   - numpy
+  - biopython

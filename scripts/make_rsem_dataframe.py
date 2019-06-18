@@ -17,6 +17,7 @@ columns = [ids]
 for file in files:
     columns.append(np.array([line.split('\t')[column] for line in open(file)]))
 dataframe = np.column_stack(columns)
-dataframe[0,:] = ["id"].extend([os.path.basename(file) + "_" + file.strip("_R1.fastq.gz") for file in files])
+dataframe[0,1:] = [os.path.dirname(file).split("/")[-2] + "_" + os.path.basename(file).split(".")[0].split("_")[0] for file in files]
+dataframe[0,0] = "gene_id"
 
 np.savetxt(outf, dataframe, delimiter="\t", fmt="%s")
