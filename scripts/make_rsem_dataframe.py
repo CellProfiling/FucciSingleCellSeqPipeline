@@ -1,15 +1,19 @@
 import sys
 import numpy as np
 import os
+import glob
 
-USAGE = "python make_rsem_dataframe.py <column_index> <outFile> file1 file2 ... fileN"
+USAGE = "python make_rsem_dataframe.py <column_index> <outFile>"
 
-if len(sys.argv) < 4:
+if len(sys.argv) != 3:
     print(USAGE)
     exit()
 
 column = int(sys.argv[1])
-outf, files = sys.argv[2], sys.argv[3:]
+outf = sys.argv[2]
+
+print("globbing output/*/*/*.genes.results")
+files = glob.glob("output/*/*/*.genes.results")
 line_ct = sum(1 for line in open(files[0]))
 
 ids = np.array([line.split('\t')[0].strip("gene:") for line in open(files[0])])

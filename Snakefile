@@ -21,7 +21,7 @@ def unique_tag():
     return str(len(str(expand("{fq}", fq=FQ_PREFIXES))))
 
 rule all:
-    input: "output/counts.tsv"
+    input: "output/counts.tsv.gz"
     # input: "output/counts" + unique_tag() + ".tsv"
 
 # rule clean:

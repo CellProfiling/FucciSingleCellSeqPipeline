@@ -1,7 +1,5 @@
 RAM_MB_REQ = 50000 #mb
 RAM_B_REQ = RAM_MB_REQ * 1000 # BYTES
-FA=TEST_GENOME_FA
-GFF3=TEST_ENSEMBL_GFF
 
 rule star_genome_generate:
     input:
