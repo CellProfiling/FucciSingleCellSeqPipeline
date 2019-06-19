@@ -1,5 +1,9 @@
 # Snakemake analysis pipeline for scRNA-Seq data
 
+## Single cell sequencing files
+
+Place the folder `ESCG_data/` into this directory.
+
 ## Updating the Ensembl version
 
 The genome and ensembl versions are located at the top of the file `Snakefile`.
