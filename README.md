@@ -1,5 +1,10 @@
 # Snakemake analysis pipeline for scRNA-Seq data
 
+## Updating the Ensembl version
+
+The genome and ensembl versions are located at the top of the file `Snakefile`.
+These can be updated, and the references will be downloaded automatically.
+
 ## Usage
 
 1) install conda: https://docs.conda.io/en/latest/miniconda.html
