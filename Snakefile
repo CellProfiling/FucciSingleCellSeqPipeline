@@ -22,12 +22,10 @@ def unique_tag():
 
 rule all:
     input: "output/counts.tsv.gz"
-    # input: "output/counts" + unique_tag() + ".tsv"
 
-# rule clean:
-#     shell: "rm -rf ensembl output"
+rule clean:
+    shell: "rm -rf ensembl output"
 
-# include: "rules/align.smk"
 include: "rules/quant.smk"
 
 rule download_ensembl_genome:
