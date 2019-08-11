@@ -35,15 +35,15 @@ rule rsem_star_align:
 
 rule make_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
-    input: expand("output/{fq}.genes.results", fq=FQ_PREFIXES)
+    input:
+        expand("output/{fq}.genes.results", fq=FQ_PREFIXES),
+        gff=GFF3 = ".fix.gff3"
     output:
-        counts="output/counts.tsv.gz",
-        tpms="output/tpms.tsv.gz"
+        counts="output/Counts.csv",
+        names="output/IdsToNames.csv",
+        tpms="output/Tpms.csv"
     shell:
-        "python scripts/make_rsem_dataframe.py 4 {output.counts} && "
-        "gzip {output.counts} && "
-        "python scripts/make_rsem_dataframe.py 5 {output.tpms} && "
-        "gzip {output.tpms}"
+        "python scripts/make_rsem_dataframe.py {input.gff} {output.counts} {output.tpms} {output.names}"
 
 # rule rsem_genome:
 #     '''Create an RSEM reference. For use with STAR aligned BAMs.'''

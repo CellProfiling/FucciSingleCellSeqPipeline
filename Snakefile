@@ -14,14 +14,16 @@ REF_FOLDER = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}Rsem/"
 STAR_REF_FOLDER = f"ensembl/Homo_sapiens.{GENEMODEL_VERSION}Star" # no slash
 
 # FQ_FOLDER = "/mnt/e/ProjectsActive/tonsil/data_spritzsnake/trimmed/"
+# configfile: "config.yaml"
 FQ_FOLDER = "ESCG_data/"
 (FQ_PREFIXES,) = glob_wildcards(FQ_FOLDER + "{fq}.fastq.gz")
+# FQ_PREFIXES = config["fastq_prefixes"]
 
 def unique_tag():
     return str(len(str(expand("{fq}", fq=FQ_PREFIXES))))
 
 rule all:
-    input: "output/counts.tsv.gz"
+    input: "output/Counts.csv"
 
 rule clean:
     shell: "rm -rf ensembl output"
