@@ -23,7 +23,7 @@ def unique_tag():
     return str(len(str(expand("{fq}", fq=FQ_PREFIXES))))
 
 rule all:
-    input: "output/Counts.csv"
+    input: "output/Counts.csv", "output/Counts_Isoforms.csv"
 
 rule clean:
     shell: "rm -rf ensembl output"

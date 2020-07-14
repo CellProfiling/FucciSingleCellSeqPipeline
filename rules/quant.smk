@@ -33,17 +33,29 @@ rule rsem_star_align:
         "(rsem-calculate-expression --no-bam-output --time --star" # --calc-ci" probably not using confidence intervals here
         " --num-threads {threads} <(zcat " + FQ_FOLDER + "{wildcards.fq}.fastq.gz) " + REFSTAR_PREFIX + " output/{wildcards.fq}) &> {log}"
 
-rule make_rsem_dataframe:
+rule make_gene_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
     input:
         expand("output/{fq}.genes.results", fq=FQ_PREFIXES),
-        gff=GFF3 = ".fix.gff3"
+        gff=GFF3 + ".fix.gff3"
     output:
         counts="output/Counts.csv",
         names="output/IdsToNames.csv",
         tpms="output/Tpms.csv"
     shell:
-        "python scripts/make_rsem_dataframe.py {input.gff} {output.counts} {output.tpms} {output.names}"
+        "python scripts/make_rsem_dataframe.py genes {input.gff} {output.counts} {output.tpms} {output.names}"
+
+rule make_isoform_rsem_dataframe:
+    '''Take the results from RSEM and put them in a usable dataframe'''
+    input:
+        expand("output/{fq}.isoforms.results", fq=FQ_PREFIXES),
+        gff=GFF3 + ".fix.gff3"
+    output:
+        counts="output/Counts_Isoforms.csv",
+        names="output/IdsToNames_Isoforms.csv",
+        tpms="output/Tpms_Isoforms.csv"
+    shell:
+        "python scripts/make_rsem_dataframe.py isoforms {input.gff} {output.counts} {output.tpms} {output.names}"
 
 # rule rsem_genome:
 #     '''Create an RSEM reference. For use with STAR aligned BAMs.'''
