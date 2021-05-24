@@ -29,17 +29,17 @@ rule fix_gff3_for_rsem:
 
 rule prefetch_sras_se:
     '''Prefetch SRA from GEO SRA'''
-    output: temp("../results/sra/{sra}.sra")
-    benchmark: "../results/sra/{sra}.benchmark"
-    log: "../results/sra/{sra}.log"
-    params: outdir=lambda w, output: os.path.dirname(output[0])
+    output: temp("../results/sra/{sra}/{sra}.sra")
+    benchmark: "../results/sra/{sra}/{sra}.benchmark"
+    log: "../results/sra/{sra}/{sra}.log"
+    params: outdir=lambda w, output: os.path.dirname(os.path.dirname(output[0]))
     conda: "../envs/downloads.yaml"
     shell:
         "prefetch {wildcards.sra}"
         " --output-directory {params.outdir} &> {log}"
 
 rule split_sras_se:
-    input: "../results/sra/{sra}.sra"
+    input: "../results/sra/{sra}/{sra}.sra"
     output: "../results/fastq/{sra}.fastq" # independent of pe/se
     benchmark: "../results/fastq/{sra}.benchmark"
     log: "../results/fastq/{sra}.log"
@@ -47,7 +47,7 @@ rule split_sras_se:
     conda: "../envs/downloads.yaml"
     shell:
         "fastq-dump -I --outdir {params.outdir} --split-files {input} && "
-        "mv ../../results/{wildcards.sra}_1.fastq {output} &> {log}"
+        "mv {params.outdir}/{wildcards.sra}_1.fastq {output} &> {log}"
 
 rule fastp_sra_se:
     '''Trim adapters, read quality filtering, make QC outputs'''
