@@ -1,4 +1,3 @@
-SPECIES_LOWER = config['species'].lower()
 PROTOCOL = "http"
 
 rule download_ensembl_references:
@@ -22,44 +21,44 @@ rule download_ensembl_references:
 rule fix_gff3_for_rsem:
     '''This script changes descriptive notes in column 4 to "gene" if a gene row, and it also adds ERCCs to the gene model'''
     input: ENSEMBL_GFF
-    output: ENSEMBL_GFF + ".fix.gff3"
-    log: ENSEMBL_GFF + ".fix.gff3.log"
-    benchmark: ENSEMBL_GFF + ".fix.gff3.benchmark"
-    conda: "../envs/environment.yaml"
+    output: f"{ENSEMBL_GFF}.fix.gff3"
+    log: f"{ENSEMBL_GFF}.fix.gff3.log"
+    benchmark: f"{ENSEMBL_GFF}.fix.gff3.benchmark"
+    conda: "../envs/downloads.yaml"
     shell: "python scripts/fix_gff3_for_rsem.py {input} {output} 2> {log}"
 
 rule prefetch_sras_se:
     '''Prefetch SRA from GEO SRA'''
-    output: temp("../../results/sra/{sra}.sra")
-    benchmark: "../../results/sra/{sra}.benchmark"
-    log: "../../results/sra/{sra}.log"
-    params: oudir="../../results/sra/"
-    conda: "../envs/environment.yaml"
+    output: temp("../results/sra/{sra}.sra")
+    benchmark: "../results/sra/{sra}.benchmark"
+    log: "../results/sra/{sra}.log"
+    params: outdir=lambda w, output: os.path.dirname(output[0])
+    conda: "../envs/downloads.yaml"
     shell:
         "prefetch {wildcards.sra}"
         " --output-directory {params.outdir} &> {log}"
 
 rule split_sras_se:
-    input: "../../results/sra/{sra}.sra"
-    output: "../../results/fastq/{sra}.fastq" # independent of pe/se
-    benchmark: "../../results/fastq/{sra}.benchmark"
-    log: "../../results/fastq/{sra}.log"
-    params: oudir="../../results/fastq/"
-    conda: "../envs/environment.yaml"
+    input: "../results/sra/{sra}.sra"
+    output: "../results/fastq/{sra}.fastq" # independent of pe/se
+    benchmark: "../results/fastq/{sra}.benchmark"
+    log: "../results/fastq/{sra}.log"
+    params: outdir=lambda w, output: os.path.dirname(output[0])
+    conda: "../envs/downloads.yaml"
     shell:
-        "fastq-dump -I --outdir {outdir} --split-files {input} && "
+        "fastq-dump -I --outdir {params.outdir} --split-files {input} && "
         "mv ../../results/{wildcards.sra}_1.fastq {output} &> {log}"
 
 rule fastp_sra_se:
     '''Trim adapters, read quality filtering, make QC outputs'''
-    input: "../../results/fastq/{sra}.fastq",
+    input: "../results/fastq/{sra}.fastq",
     output:
-        fq="../../results/fastq/{sra}.trim.fastq.gz",
-        html="../../results/fastq/{sra}.trim.html",
-        json="../../results/fastq/{sra}.trim.json",
-    threads: 6
-    log: "../../results/fastq/{sra}.trim.log"
-    conda: "../envs/environment.yaml"
+        fq="../results/fastq/{sra}.trim.fastq.gz",
+        html="../results/fastq/{sra}.trim.html",
+        json="../results/fastq/{sra}.trim.json",
+    threads: 4
+    log: "../results/fastq/{sra}.trim.log"
+    conda: "../envs/downloads.yaml"
     params:
         quality=20,
         title="{sra}"
