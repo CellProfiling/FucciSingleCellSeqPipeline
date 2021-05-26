@@ -1,34 +1,44 @@
+rule filter_ercc:
+    '''Filter the empty ERCC entries'''
+    input: "../resources/ERCC.fa"
+    output: "../resources/ERCC.filtered.fa"
+    log: "../resources/ERCC.filtered.log"
+    benchmark: "../resources/ERCC.filtered.benchmark"
+    conda: "../envs/quant.yaml"
+    shell: "grep -v ERCC_ID {input} > {output} 2> {log}"
+
 rule rsem_star_genome:
     '''Create an RSEM reference with STAR indices'''
     input:
-        efa="../resources/ERCC.fa",
+        efa="../resources/ERCC.filtered.fa",
         gfa=GENOME_FA,
         gff=f"{ENSEMBL_GFF}.fix.gff3"
     output:
-        f"{REFSTAR_PREFIX}.gtf",
+        gtf=f"{REFSTAR_FOLDER}RsemStarReference.gtf",
         suffix = f"{REFSTAR_FOLDER}SA"
-    params: prefix=lambda w, output: output.suffix.strip("SA")
+    params: prefix=lambda w, output: output.gtf[:-4]
     threads: 99
     resources: mem_mb=60000
     log: "../resources/ensembl/prepare-reference.log"
+    benchmark: "../resources/ensembl/prepare-reference.benchmark"
     conda: "../envs/quant.yaml"
     shell:
         "(rsem-prepare-reference --num-threads {threads} --star --gff3 {input.gff}"
-        " \"{input.efa}\",\"{input.gfa}\" {params.prefix}) 2> {log}"
+        " \"{input.efa}\",\"{input.gfa}\" {params.prefix}) &> {log}"
 
 rule rsem_star_align:
     '''Align to transcripts with STAR and quantify with RSEM'''
     input:
         suffix=f"{REFSTAR_FOLDER}SA",
-        gtf=f"{REFSTAR_PREFIX}.gtf",
+        gtf=f"{REFSTAR_FOLDER}RsemStarReference.gtf",
         fastq=expand("../results/fastq/{sra}.trim.fastq.gz", sra=config['sra']) #single end only
     output:
         "../results/quant/{sra}.isoforms.results",
         "../results/quant/{sra}.genes.results",
         "../results/quant/{sra}.time",
         directory("../results/{sra}.stat"),
-    params: prefix=lambda w, input: input.suffix.strip("SA")
-    resources: mem_mb=50000
+    params: prefix=lambda w, input: input.gtf[:-4]
+    resources: mem_mb=60000
     threads: 16
     log: "../results/{sra}calculate-expression.log"
     benchmark: "../results/{sra}calculate-expression.benchmark"
@@ -52,7 +62,8 @@ rule make_gene_rsem_dataframe:
     log: "../results/quant/Counts.log"
     benchmark: "../results/quant/Counts.benchmark"
     shell:
-        "python scripts/make_rsem_dataframe.py genes {input.gff} {output.counts} {output.tpms} {output.names}"
+        "python scripts/make_rsem_dataframe.py genes {input.gff} "
+        "{output.counts} {output.tpms} {output.names} 2> {log}"
 
 rule make_isoform_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
@@ -67,4 +78,5 @@ rule make_isoform_rsem_dataframe:
     log: "../results/quant/Counts_Isoforms.log"
     benchmark: "../results/quant/Counts_Isoforms.benchmark"
     shell:
-        "python scripts/make_rsem_dataframe.py isoforms {input.gff} {output.counts} {output.tpms} {output.names}"
+        "python scripts/make_rsem_dataframe.py isoforms {input.gff} "
+        "{output.counts} {output.tpms} {output.names} 2> {log}"

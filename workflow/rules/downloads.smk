@@ -25,7 +25,7 @@ rule fix_gff3_for_rsem:
     log: f"{ENSEMBL_GFF}.fix.gff3.log"
     benchmark: f"{ENSEMBL_GFF}.fix.gff3.benchmark"
     conda: "../envs/downloads.yaml"
-    shell: "python scripts/fix_gff3_for_rsem.py {input} {output} 2> {log}"
+    shell: "python scripts/fix_gff3_for_rsem.py {input} {output} &> {log}"
 
 rule prefetch_sras_se:
     '''Prefetch SRA from GEO SRA'''
@@ -56,7 +56,7 @@ rule fastp_sra_se:
         fq="../results/fastq/{sra}.trim.fastq.gz",
         html="../results/fastq/{sra}.trim.html",
         json="../results/fastq/{sra}.trim.json",
-    threads: 4
+    threads: 2
     log: "../results/fastq/{sra}.trim.log"
     conda: "../envs/downloads.yaml"
     params:

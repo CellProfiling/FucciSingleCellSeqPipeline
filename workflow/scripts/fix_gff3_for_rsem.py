@@ -13,7 +13,7 @@ with open(sys.argv[2], "w") as outff:
             elif lins[8].startswith("ID=gene:"): lins[2] = "gene"
             outff.write("\t".join(lins))
 
-    ercc = SeqIO.parse(open("data/ERCC.fa"),'fasta')
+    ercc = SeqIO.parse(open("../resources/ERCC.fa"),'fasta')
     for seq_record in ercc:
         if len(seq_record.seq) > 0:
             id = seq_record.id.split()[0]
