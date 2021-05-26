@@ -18,6 +18,15 @@ rule download_ensembl_references:
         "wget -O - {params.gff} | gunzip -c - > {output.gff3} && "
         "wget -O - {params.pep} | gunzip -c - > {output.pfa}) 2> {log}"
 
+rule download_ensembl_gtf_reference:
+    '''Download the Ensembl GTF, used for velocyto'''
+    output: gtf=ENSEMBL_GTF
+    params: gtf=f"{PROTOCOL}://ftp.ensembl.org/pub/release-{ENSEMBL_VERSION}/gtf/{SPECIES_LOWER}/{REF}.{ENSEMBL_VERSION}.gtf.gz",
+    benchmark: "../resources/ensembl/downloads.gtf.benchmark"
+    log: "../resources/ensembl/downloads.gtf.log"
+    conda: "../envs/downloads.yaml"
+    shell: "(wget -O - {params.gtf} | gunzip -c - > {output.gtf}) 2> {log}"
+
 rule fix_gff3_for_rsem:
     '''This script changes descriptive notes in column 4 to "gene" if a gene row, and it also adds ERCCs to the gene model'''
     input: ENSEMBL_GFF

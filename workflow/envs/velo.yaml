@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - velocyto.py==0.17.17

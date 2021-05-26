@@ -13,3 +13,8 @@ dependencies:
   - biopython
   - gzip
   - wget
+  - gdown
+  - scvelo==0.2.3
+  - velocyto.py==0.17.17
+  - pytables # scvelo
+  - louvain # sccvelo

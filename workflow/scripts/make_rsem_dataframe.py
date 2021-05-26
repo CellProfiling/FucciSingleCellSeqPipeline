@@ -34,8 +34,8 @@ with open(gff) as gffhandle:
                 transcript_id_to_description[attributes["ID"][len("transcript:"):]] = attributes["description"] if "ID" in attributes and "description" in attributes else ""
 
 
-print(f"globbing ../../results/quant/*.{level}.results")
-files = glob.glob(f"../../results/quant/*.{level}.results")
+print(f"globbing ../results/quant/*.{level}.results")
+files = glob.glob(f"../results/quant/*.{level}.results")
 line_ct = sum(1 for line in open(files[0]))
 
 def get_prefix(file):

@@ -16,7 +16,8 @@ rule rsem_star_genome:
     output:
         gtf=f"{REFSTAR_FOLDER}RsemStarReference.gtf",
         suffix = f"{REFSTAR_FOLDER}SA"
-    params: prefix=lambda w, output: output.gtf[:-4]
+    params:
+        prefix=lambda w, output: output.gtf[:-4]
     threads: 99
     resources: mem_mb=60000
     log: "../resources/ensembl/prepare-reference.log"
@@ -36,18 +37,21 @@ rule rsem_star_align:
         "../results/quant/{sra}.isoforms.results",
         "../results/quant/{sra}.genes.results",
         "../results/quant/{sra}.time",
-        directory("../results/{sra}.stat"),
-    params: prefix=lambda w, input: input.gtf[:-4]
-    resources: mem_mb=60000
-    threads: 16
-    log: "../results/{sra}calculate-expression.log"
-    benchmark: "../results/{sra}calculate-expression.benchmark"
+        directory("../results/quant/{sra}.stat"),
+    params:
+        prefix=lambda w, input: input.gtf[:-4],
+        results=lambda w, output: os.path.dirname(os.path.dirname(output[0])),
+        quant=lambda w, output: os.path.dirname(output[0]),
+    resources: mem_mb=30000
+    threads: 8
+    log: "../results/quant/{sra}calculate-expression.log"
+    benchmark: "../results/quant/{sra}calculate-expression.benchmark"
     conda: "../envs/quant.yaml"
     shell:
-        "(rsem-calculate-expression --no-bam-output --time --star" # --calc-ci" probably not using confidence intervals here
-        " --num-threads {threads} <(zcat ../../results/{wildcards.sra}.trim.fastq.gz)"
+        "(rsem-calculate-expression --time --no-bam-output --star" # --calc-ci" probably not using confidence intervals here
+        " --num-threads {threads} <(zcat {params.results}/{wildcards.sra}.trim.fastq.gz)"
         " {params.prefix}"
-        " ../../results/quant/{wildcards.sra}) &> {log}"
+        " {params.quant}/{wildcards.sra}) &> {log}"
 
 rule make_gene_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
@@ -63,7 +67,7 @@ rule make_gene_rsem_dataframe:
     benchmark: "../results/quant/Counts.benchmark"
     shell:
         "python scripts/make_rsem_dataframe.py genes {input.gff} "
-        "{output.counts} {output.tpms} {output.names} 2> {log}"
+        "{output.counts} {output.tpms} {output.names} &> {log}"
 
 rule make_isoform_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
@@ -79,4 +83,4 @@ rule make_isoform_rsem_dataframe:
     benchmark: "../results/quant/Counts_Isoforms.benchmark"
     shell:
         "python scripts/make_rsem_dataframe.py isoforms {input.gff} "
-        "{output.counts} {output.tpms} {output.names} 2> {log}"
+        "{output.counts} {output.tpms} {output.names} &> {log}"
