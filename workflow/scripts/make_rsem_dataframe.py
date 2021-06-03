@@ -4,15 +4,15 @@ import pandas as pd
 import os
 import glob
 
-USAGE = "python make_rsem_dataframe.py <level> <gff> <outCountsFile> <outTpmsFile> <namesOut>"
+USAGE = "python make_rsem_dataframe.py <level> <gff> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
 if len(sys.argv) != 6: print(USAGE); exit();
-level, gff, outcounts, outtpms, outn = sys.argv[1:]
+level, gff, outcounts, outtpms, outn, outids = sys.argv[1:]
 
 print(f"getting gene names from {gff}")
 with open(gff) as gffhandle:
     line_ct = sum([1 for line in gffhandle])
 gene_id_to_name, gene_id_to_biotype, gene_id_to_description = {}, {}, {}
-transcript_id_to_name, transcript_id_to_biotype, transcript_id_to_description = {}, {}, {}
+transcript_id_to_name, transcript_id_to_biotype, transcript_id_to_description, transcript_id_to_gene = {}, {}, {}, {}
 with open(gff) as gffhandle:
     for i, line in enumerate(gffhandle):
         if i % 50000 == 0: print(f"Processed {i} lines out of {line_ct} from {gff}.")
@@ -32,6 +32,8 @@ with open(gff) as gffhandle:
                 transcript_id_to_name[attributes["ID"][len("transcript:"):]] = attributes["Name"]
                 transcript_id_to_biotype[attributes["ID"][len("transcript:"):]] = attributes["biotype"] if "ID" in attributes and "biotype" in attributes else ""
                 transcript_id_to_description[attributes["ID"][len("transcript:"):]] = attributes["description"] if "ID" in attributes and "description" in attributes else ""
+                transcript_id_to_gene[attributes["ID"][len("transcript:"):]] = attributes["Parent"][len("gene:"):] if "ID" in attributes and "Parent" in attributes else ""
+
 
 
 print(f"globbing ../results/quant/*.{level}.results")
@@ -70,5 +72,8 @@ pddf.filter(regex="ERCC").to_csv(outtpms + ".ercc.csv")
 
 print(f"Saving to {outn} ...")
 np.savetxt(outn, np.column_stack((ids[1:], names, biotypes, description)), delimiter=",", fmt="%s")
+
+print(f"Saving to {outids} ...")
+np.savetxt(outids, np.column_stack((transcript_id_to_gene.keys(),transcript_id_to_gene.values())), delimiter=",", fmt="%s")
 
 print("Done.")

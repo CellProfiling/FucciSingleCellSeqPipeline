@@ -2,3 +2,4 @@ channels:
   - bioconda
 dependencies:
   - velocyto.py==0.17.17
+  - entrez-direct # for srr_lookup

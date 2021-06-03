@@ -18,3 +18,4 @@ dependencies:
   - velocyto.py==0.17.17
   - pytables # scvelo
   - louvain # sccvelo
+  - entrez-direct # for srr_lookup

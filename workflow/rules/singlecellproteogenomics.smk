@@ -1,7 +1,7 @@
 SCP_VERSION="1.1"
 
 rule download_scp:
-    output: "../results/SingleCellProteogenomics/workflow/Snakefile"
+    output: directory("../results/SingleCellProteogenomics/")
     conda: "../envs/downloads.yaml"
     log: "../results/downoad_scp.log"
     benchmark: "../results/downoad_scp.benchmark"
@@ -12,7 +12,7 @@ rule download_scp:
 
 rule copy_new_results:
     input:
-        inputs="../results/SingleCellProteogenomics/workflow/Snakefile",
+        inputs="../results/SingleCellProteogenomics/",
         quant=[
             #"../results/IsoformToGene.csv.gz",
             "../results/quant/Counts.csv",
