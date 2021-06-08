@@ -11,20 +11,23 @@ ENSEMBL_GFF = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}.gff3"
 ENSEMBL_GTF = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}.gtf"
 RSEM_REF_FOLDER = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}Rsem/"
 STAR_REF_FOLDER = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}Star" # no slash
+FA,GFF,GTF=GENOME_FA,ENSEMBL_GFF,ENSEMBL_GTF
 
 # Test files
 TEST_GENOME_FA = f"../resources/ensembl/202122.fa"
 TEST_ENSEMBL_GFF = f"../resources/ensembl/202122.gff3"
 TEST_ENSEMBL_GTF = f"../resources/ensembl/202122.gtf"
+
+# Uncomment to trigger testing
 FA,GFF,GTF=TEST_GENOME_FA,TEST_ENSEMBL_GFF,TEST_ENSEMBL_GTF
 
 rule all:
     input:
-        # "../results/final/ProteinPseudotimePlotting.csv.gz",
-        # "../results/final/RNAPseudotimePlotting.csv.gz"
-        "../results/quant/Counts.csv",
-        "../results/velocity/a.loom",
-        "../results/velocity/a.obs_names.csv"
+        "../results/final/ProteinPseudotimePlotting.csv.gz",
+        "../results/final/RNAPseudotimePlotting.csv.gz"
+        #"../results/quant/Counts.csv",
+        #"../results/velocity/a.loom",
+        #"../results/velocity/a.obs_names.csv"
 
 include: "rules/downloads.smk"
 include: "rules/align.smk"

@@ -81,7 +81,7 @@ rule make_isoform_rsem_dataframe:
         counts="../results/quant/Counts_Isoforms.csv",
         names="../results/quant/IdsToNames_Isoforms.csv",
         tpms="../results/quant/Tpms_Isoforms.csv",
-        ids="../results/quant/IsoformToGene.csv.gz",
+        ids="../results/quant/IsoformToGene_Isoforms.csv.gz",
     conda: "../envs/quant.yaml"
     log: "../results/quant/Counts_Isoforms.log"
     benchmark: "../results/quant/Counts_Isoforms.benchmark"

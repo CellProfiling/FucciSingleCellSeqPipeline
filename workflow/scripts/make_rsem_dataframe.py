@@ -5,7 +5,7 @@ import os
 import glob
 
 USAGE = "python make_rsem_dataframe.py <level> <gff> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
-if len(sys.argv) != 6: print(USAGE); exit();
+if len(sys.argv) != 7: print(USAGE); exit();
 level, gff, outcounts, outtpms, outn, outids = sys.argv[1:]
 
 print(f"getting gene names from {gff}")
