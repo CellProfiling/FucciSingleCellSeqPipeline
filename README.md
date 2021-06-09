@@ -17,10 +17,15 @@ These can be updated, and the references will be downloaded automatically.
 
 ## Usage
 
-1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline`
+1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline/workflow`
 1) Install conda: https://docs.conda.io/en/latest/miniconda.html
 2) Install snakemake using conda: `conda install -c conda-forge snakemake-minimal`
 4) Run the workflow: `snakemake --use-conda --cores 24 --resources mem_mb=100000`, where you can subsitute the max number of cores and max memory allocation. At least 54 GB of free memory should be available.
+
+## Usage on cluster
+
+1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline/workflow`
+2) If 
 
 ## Citation
 
