@@ -1,6 +1,6 @@
 import os
 
-INPUTID="1G4i115FCH8XNyiEHCkBXMSO_9pwGflTq"
+INPUTID="149ICTtieYjuKWZoLwRLzimwff0n6eWqw"
 
 rule SingleCellProteogenomics_copyResults:
     input:
