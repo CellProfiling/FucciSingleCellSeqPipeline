@@ -1,5 +1,6 @@
 .snakemake
 resources/ensembl
+resources/ERCC.filtered.*
 results
 input
 **/.DS_Store
