@@ -4,9 +4,9 @@ import pandas as pd
 import os
 import glob
 
-USAGE = "python make_rsem_dataframe.py <level> <gff> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
-if len(sys.argv) != 7: print(USAGE); exit();
-level, gff, outcounts, outtpms, outn, outids = sys.argv[1:]
+USAGE = "python make_rsem_dataframe.py <level> <gff> <srrLookup> <seriesMatrix> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
+if len(sys.argv) != 9: print(USAGE); exit();
+level, gff, srr_lookup, series_matrix, outcounts, outtpms, outn, outids = sys.argv[1:]
 
 print(f"getting gene names from {gff}")
 with open(gff) as gffhandle:
@@ -40,8 +40,26 @@ print(f"globbing ../results/quant/*.{level}.results")
 files = glob.glob(f"../results/quant/*.{level}.results")
 line_ct = sum(1 for line in open(files[0]))
 
+print("Making SRR-to-cell lookup...")
+srr_lookup = dict([x.split()[::-1] for x in open(srr_lookup)])
+series_matrix_lines = open(series_matrix).readlines()
+cells, srr, has_srr = [], [], []
+for line in series_matrix_lines:
+    if line.startswith('!Sample_title'):
+        cells=[x.strip('"').strip('Single U2OS cell ').strip() for x in line.split('\t')[1:]]
+    if line.startswith('!Sample_relation') and "SRX" in line:
+        srrs = [x.split('=')[1][:-1].strip() for x in line.split('\t')[1:]]
+        has_srr = [x in srr_lookup for x in srrs]
+        srr = [srr_lookup[x] for x in srrs if x in srr_lookup]
+cells=np.array(cells)[has_srr] # for testing
+if len(cells) != len(srr):
+    print("Error: series matrix has different cell and srr lengths")
+    exit(1)
+srr_to_cell = dict((srr[idx], cells[idx]) for idx in range(len(srr)))
+
 def get_prefix(file):
-    return os.path.basename(file).split(".")[0].split("_")[0] + "_" + os.path.dirname(file).split("/")[-2].split("_")[-1]
+    srr = os.path.basename(file).split(".")[0].split("_")[0]
+    return srr_to_cell[srr]
 
 doUseGene = level.startswith("gene")
 ids = [line.split('\t')[0].strip("gene:").strip("transcript:") for line in open(files[0])]
@@ -74,6 +92,6 @@ print(f"Saving to {outn} ...")
 np.savetxt(outn, np.column_stack((ids[1:], names, biotypes, description)), delimiter=",", fmt="%s")
 
 print(f"Saving to {outids} ...")
-np.savetxt(outids, np.column_stack((transcript_id_to_gene.keys(),transcript_id_to_gene.values())), delimiter=",", fmt="%s")
+np.savetxt(outids, np.column_stack((list(transcript_id_to_gene.keys()), list(transcript_id_to_gene.values()))), delimiter=",", fmt="%s")
 
 print("Done.")

@@ -1,0 +1,3 @@
+[submodule "SingleCellProteogenomics"]
+	path = SingleCellProteogenomics
+	url = https://github.com/CellProfiling/SingleCellProteogenomics.git

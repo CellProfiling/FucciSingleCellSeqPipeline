@@ -59,32 +59,40 @@ rule make_gene_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
     input:
         expand("../results/quant/{sra}.genes.results", sra=config['sra']),
-        gff=f"{GFF}.fix.gff3"
+        gff=f"{GFF}.fix.gff3",
+        series_matrix="../resources/GSE146773_series_matrix.txt",
+        srr_lookup="../results/srr_lookup.txt",
     output:
         counts="../results/quant/Counts.csv",
+        counts_ercc="../results/quant/Counts.csv.ercc.csv",
         names="../results/quant/IdsToNames.csv",
         tpms="../results/quant/Tpms.csv",
+        tpms_ercc="../results/quant/Tpms.csv.ercc.csv",
         ids="../results/quant/IsoformToGene.csv.gz",
     conda: "../envs/quant.yaml"
     log: "../results/quant/Counts.log"
     benchmark: "../results/quant/Counts.benchmark"
     shell:
-        "python scripts/make_rsem_dataframe.py genes {input.gff} "
-        "{output.counts} {output.tpms} {output.names} {output.ids} &> {log}"
+        "python scripts/make_rsem_dataframe.py genes {input.gff} {input.srr_lookup} {input.series_matrix}"
+        " {output.counts} {output.tpms} {output.names} {output.ids} &> {log}"
 
 rule make_isoform_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
     input:
         expand("../results/quant/{sra}.isoforms.results", sra=config['sra']),
-        gff=f"{GFF}.fix.gff3"
+        gff=f"{GFF}.fix.gff3",
+        series_matrix="../resources/GSE146773_series_matrix.txt",
+        srr_lookup="../results/srr_lookup.txt",
     output:
         counts="../results/quant/Counts_Isoforms.csv",
+        counts_ercc="../results/quant/Counts_Isoforms.csv.ercc.csv",
         names="../results/quant/IdsToNames_Isoforms.csv",
         tpms="../results/quant/Tpms_Isoforms.csv",
+        tpms_ercc="../results/quant/Tpms_Isoforms.csv.ercc.csv",
         ids="../results/quant/IsoformToGene_Isoforms.csv.gz",
     conda: "../envs/quant.yaml"
     log: "../results/quant/Counts_Isoforms.log"
     benchmark: "../results/quant/Counts_Isoforms.benchmark"
     shell:
-        "python scripts/make_rsem_dataframe.py isoforms {input.gff} "
-        "{output.counts} {output.tpms} {output.names} {output.ids} &> {log}"
+        "python scripts/make_rsem_dataframe.py isoforms {input.gff} {input.srr_lookup} {input.series_matrix}"
+        " {output.counts} {output.tpms} {output.names} {output.ids} &> {log}"
