@@ -33,7 +33,8 @@ rule setup:
         GENOME_FA,
         ENSEMBL_GFF,
         ENSEMBL_GTF,
-        expand("../results/sra/{sra}/{sra}.sra", sra=config['sra'])
+        expand("../results/sra/{sra}/{sra}.sra", sra=config['sra']),
+        "../results/srr_lookup.txt",
     output: "../results/setup.txt"
     log: "../results/setup.log"
     conda: "envs/setup.yaml"
