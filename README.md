@@ -6,19 +6,21 @@ This repository contains the _snakemake_ pipeline for analyzing the RNA sequenci
 
 ## Single-cell sequencing files
 
-The single-cell RNA-Seq data is available at GEO SRA under project number [GSE146773](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE146773). 
+The single-cell RNA-Seq data is available at GEO SRA under project number [GSE146773](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE146773).
+
+This data is downloaded automatically in this pipeline.
 
 ## Updating the Ensembl version
 
-The genome and ensembl versions are located at the top of the file `Snakefile`.
+The genome and Ensembl versions are located at the top of the file `Snakefile`.
 These can be updated, and the references will be downloaded automatically.
 
 ## Usage
 
+1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline`
 1) Install conda: https://docs.conda.io/en/latest/miniconda.html
-2) Create the conda environment: `conda env create --file environment.yaml --name cellquant`
-3) Activate the conda environment: `conda activate cellquant`
-4) Run the workflow: recommended command is `snakemake --cores 24 --resources mem_mb=100000`, where you can subsitute the max number of cores and max memory allocation. The memory allocation should be at least 50000 MB if possible. It might work with 32000 MB, but no guarantees.
+2) Install snakemake using conda: `conda install -c conda-forge snakemake-minimal`
+4) Run the workflow: `snakemake --use-conda --cores 24 --resources mem_mb=100000`, where you can subsitute the max number of cores and max memory allocation. At least 54 GB of free memory should be available.
 
 ## Citation
 

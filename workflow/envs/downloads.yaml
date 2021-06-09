@@ -1,0 +1,12 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python
+  - fastp
+  - sra-tools =2.10
+  - biopython
+  - pandas
+  - gzip
+  - wget
+  - gdown

@@ -1,5 +1,5 @@
 .snakemake
-ensembl
-output
+resources/ensembl
+results
 input
-ESCG_data
+**/.DS_Store

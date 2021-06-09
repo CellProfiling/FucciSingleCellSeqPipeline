@@ -1,0 +1,33 @@
+configfile: "config/SraAccList.yaml"
+
+GENOME_VERSION = "GRCh38"
+ENSEMBL_VERSION = "103"
+SPECIES = config["species"]
+SPECIES_LOWER = SPECIES.lower()
+REF = f"{SPECIES}.{GENOME_VERSION}"
+GENEMODEL_VERSION = f"{GENOME_VERSION}.{ENSEMBL_VERSION}"
+GENOME_FA = f"../resources/ensembl/Homo_sapiens.{GENOME_VERSION}.dna.primary_assembly.fa"
+ENSEMBL_GFF = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}.gff3"
+ENSEMBL_GTF = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}.gtf"
+RSEM_REF_FOLDER = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}Rsem/"
+STAR_REF_FOLDER = f"../resources/ensembl/Homo_sapiens.{GENEMODEL_VERSION}Star" # no slash
+FA,GFF,GTF=GENOME_FA,ENSEMBL_GFF,ENSEMBL_GTF
+
+# Test files
+TEST_GENOME_FA = f"../resources/ensembl/202122.fa"
+TEST_ENSEMBL_GFF = f"../resources/ensembl/202122.gff3"
+TEST_ENSEMBL_GTF = f"../resources/ensembl/202122.gtf"
+
+# Uncomment to trigger testing
+#FA,GFF,GTF=TEST_GENOME_FA,TEST_ENSEMBL_GFF,TEST_ENSEMBL_GTF
+
+rule all:
+    input:
+        "../results/final/ProteinPseudotimePlotting.csv.gz",
+        "../results/final/RNAPseudotimePlotting.csv.gz",
+
+include: "rules/downloads.smk"
+include: "rules/align.smk"
+include: "rules/quant.smk"
+include: "rules/velo.smk"
+include: "rules/singlecellproteogenomics.smk"

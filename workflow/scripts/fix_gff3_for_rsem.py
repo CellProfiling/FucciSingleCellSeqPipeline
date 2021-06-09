@@ -4,6 +4,7 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
+isgtf = sys.argv[2].endswith("gtf")
 with open(sys.argv[2], "w") as outff:
     with open(sys.argv[1]) as ff:
         print(f"Reading {sys.argv[1]}")
@@ -13,7 +14,7 @@ with open(sys.argv[2], "w") as outff:
             elif lins[8].startswith("ID=gene:"): lins[2] = "gene"
             outff.write("\t".join(lins))
 
-    ercc = SeqIO.parse(open("data/ERCC.fa"),'fasta')
+    ercc = SeqIO.parse(open("../resources/ERCC.fa"),'fasta')
     for seq_record in ercc:
         if len(seq_record.seq) > 0:
             id = seq_record.id.split()[0]
@@ -23,6 +24,11 @@ with open(sys.argv[2], "w") as outff:
                 f"ID=transcript:{id};Parent=gene:{id};Name={id};biotype=;transcript_id={id}"]]
             exon_fields = [str(x) for x in [id, "ERCC", "exon", 1, len(seq_record.seq), ".", "+", ".",
                 f"Parent=transcript:{id};Name={id};exon_id={id}"]]
-            outff.write("\t".join(gene_fields) + "\n")
-            outff.write("\t".join(transcript_fields) + "\n")
-            outff.write("\t".join(exon_fields) + "\n")
+            exon_fields_gtf = [str(x) for x in [id, "ERCC", "exon", 1, len(seq_record.seq), ".", "+", ".",
+                f"gene_id \"gene:{id}\"; transcript_id \"transcript:{id}\"; exon_number \"1\"; gene_name \"{id}\"; transcript_name \"{id}\";"]]
+            if isgtf:
+                outff.write("\t".join(exon_fields_gtf) + "\n")
+            else:
+                outff.write("\t".join(gene_fields) + "\n")
+                outff.write("\t".join(transcript_fields) + "\n")
+                outff.write("\t".join(exon_fields) + "\n")
