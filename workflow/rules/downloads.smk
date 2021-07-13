@@ -43,18 +43,27 @@ rule filter_gff3:
     '''For testing, make a smaller gene model'''
     input: f"{ENSEMBL_GFF}.fix.gff3"
     output: f"{TEST_ENSEMBL_GFF}.fix.gff3"
+    log: f"{TEST_ENSEMBL_GFF}.fix.gff3.log"
+    benchmark: f"{TEST_ENSEMBL_GFF}.fix.gff3.benchmark"
+    conda: "../envs/downloads.yaml"
     shell: "grep \"^ERCC\\|^#\\|^20\\|^21\\|^22\" {input} > {output}"
 
 rule filter_gtf:
     '''For testing, make a smaller gene model'''
     input: f"{ENSEMBL_GTF}.fix.gtf"
     output: f"{TEST_ENSEMBL_GTF}.fix.gtf"
+    log: f"{TEST_ENSEMBL_GTF}.fix.gtf.log"
+    benchmark: f"{TEST_ENSEMBL_GTF}.fix.gtf.benchmark"
+    conda: "../envs/downloads.yaml"
     shell: "grep \"^ERCC\\|^#\\|^20\\|^21\\|^22\" {input} > {output}"
 
 rule filter_fa:
     '''For testing, make a smaller genome'''
     input: GENOME_FA
     output: TEST_GENOME_FA
+    log: f"{TEST_GENOME_FA}.log"
+    benchmark: f"{TEST_GENOME_FA}.benchmark"
+    conda: "../envs/downloads.yaml"
     shell: "python scripts/filter_fasta.py {input} {output}"
 
 rule prefetch_sras_se:
@@ -70,7 +79,7 @@ rule prefetch_sras_se:
 
 rule split_sras_se:
     input: "../results/sra/{sra}/{sra}.sra"
-    output: "../results/fastq/{sra}.fastq" # independent of pe/se
+    output: temp("../results/fastq/{sra}.fastq") # independent of pe/se
     benchmark: "../results/fastq/{sra}.benchmark"
     log: "../results/fastq/{sra}.log"
     params: outdir=lambda w, output: os.path.dirname(output[0])

@@ -4,37 +4,36 @@ import pandas as pd
 import os
 import glob
 
-USAGE = "python make_rsem_dataframe.py <level> <gff> <srrLookup> <seriesMatrix> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
+USAGE = "python make_rsem_dataframe.py <level> <gtf> <srrLookup> <seriesMatrix> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
 if len(sys.argv) != 9: print(USAGE); exit();
-level, gff, srr_lookup, series_matrix, outcounts, outtpms, outn, outids = sys.argv[1:]
+level, gtf, srr_lookup, series_matrix, outcounts, outtpms, outn, outids = sys.argv[1:]
 
-print(f"getting gene names from {gff}")
-with open(gff) as gffhandle:
-    line_ct = sum([1 for line in gffhandle])
-gene_id_to_name, gene_id_to_biotype, gene_id_to_description = {}, {}, {}
-transcript_id_to_name, transcript_id_to_biotype, transcript_id_to_description, transcript_id_to_gene = {}, {}, {}, {}
-with open(gff) as gffhandle:
-    for i, line in enumerate(gffhandle):
-        if i % 50000 == 0: print(f"Processed {i} lines out of {line_ct} from {gff}.")
+print(f"getting gene names from {gtf}")
+with open(gtf) as gtfhandle:
+    line_ct = sum([1 for line in gtfhandle])
+gene_id_to_name, gene_id_to_biotype = {}, {}
+transcript_id_to_name, transcript_id_to_biotype, transcript_id_to_gene = {}, {}, {}
+with open(gtf) as gtfhandle:
+    for i, line in enumerate(gtfhandle):
+        if i % 50000 == 0: print(f"Processed {i} lines out of {line_ct} from {gtf}.")
         if not line.startswith('#'):
             line = line.strip().rstrip(';').split('\t')
-            if len(line) < 9: continue
+            if len(line) < 9 or line[2] != "transcript": continue
             attribute_list = line[8].replace('; ', ';').split(';')
             attributes = {}
             for item in attribute_list:
-                item = item.split('=')
+                item = [x.strip('"') for x in item.replace(" \"",";").split(';')]
+                if len(item) < 2:
+                    print(f"Error: not a key-value pair: {attributes} {item} in line:\n{line}")
                 attributes[item[0]] = item[1]
-            if "ID" in attributes and "Name" in attributes and attributes["ID"].startswith("gene:"):
-                gene_id_to_name[attributes["ID"][len("gene:"):]] = attributes["Name"]
-                gene_id_to_biotype[attributes["ID"][len("gene:"):]] = attributes["biotype"] if "ID" in attributes and "biotype" in attributes else ""
-                gene_id_to_description[attributes["ID"][len("gene:"):]] = attributes["description"] if "ID" in attributes and "description" in attributes else ""
-            elif "ID" in attributes and "Name" in attributes and attributes["ID"].startswith("transcript:"):
-                transcript_id_to_name[attributes["ID"][len("transcript:"):]] = attributes["Name"]
-                transcript_id_to_biotype[attributes["ID"][len("transcript:"):]] = attributes["biotype"] if "ID" in attributes and "biotype" in attributes else ""
-                transcript_id_to_description[attributes["ID"][len("transcript:"):]] = attributes["description"] if "ID" in attributes and "description" in attributes else ""
-                transcript_id_to_gene[attributes["ID"][len("transcript:"):]] = attributes["Parent"][len("gene:"):] if "ID" in attributes and "Parent" in attributes else ""
-
-
+            if any([x not in attributes for x in ["gene_id", "gene_name", "transcript_id", "transcript_name"]]):
+                print("Error: \"gene_id\", \"gene_name\", \"transcript_id\", or \"transcript_name\" not found in line:\n" + line)
+                exit(1)
+            gene_id_to_name[attributes["gene_id"].strip("gene:")] = attributes["gene_name"]
+            gene_id_to_biotype[attributes["gene_id"].strip("gene:")] = attributes["gene_biotype"] if "gene_biotype" in attributes else ""
+            transcript_id_to_name[attributes["transcript_id"].strip("transcript:")] = attributes["transcript_name"]
+            transcript_id_to_biotype[attributes["transcript_id"].strip("transcript:")] = attributes["transcript_biotype"] if "transcript_biotype" in attributes else ""
+            transcript_id_to_gene[attributes["transcript_id"].strip("transcript:")] = attributes["gene_id"]
 
 print(f"globbing ../results/quant/*.{level}.results")
 files = glob.glob(f"../results/quant/*.{level}.results")
@@ -66,7 +65,6 @@ ids = [line.split('\t')[0].strip("gene:").strip("transcript:") for line in open(
 ids[0] = "gene_id" if doUseGene else "transcript_id"
 names = [gene_id_to_name[id] if doUseGene else transcript_id_to_name[id] for id in ids[1:]]
 biotypes = [gene_id_to_biotype[id] if doUseGene else transcript_id_to_biotype[id] for id in ids[1:]]
-description = [gene_id_to_description[id] if doUseGene else transcript_id_to_description[id] for id in ids[1:]]
 counts = [np.array(ids)]
 tpms = [np.array(ids)]
 for file in files:
@@ -89,7 +87,7 @@ pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outtpms)
 pddf.filter(regex="ERCC").to_csv(outtpms + ".ercc.csv")
 
 print(f"Saving to {outn} ...")
-np.savetxt(outn, np.column_stack((ids[1:], names, biotypes, description)), delimiter=",", fmt="%s")
+np.savetxt(outn, np.column_stack((ids[1:], names, biotypes)), delimiter=",", fmt="%s")
 
 print(f"Saving to {outids} ...")
 np.savetxt(outids, np.column_stack((list(transcript_id_to_gene.keys()), list(transcript_id_to_gene.values()))), delimiter=",", fmt="%s")

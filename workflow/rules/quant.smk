@@ -59,7 +59,7 @@ rule make_gene_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
     input:
         expand("../results/quant/{sra}.genes.results", sra=config['sra']),
-        gff=f"{GFF}.fix.gff3",
+        gtf=f"{GTF}.fix.gtf",
         series_matrix="../resources/GSE146773_series_matrix.txt",
         srr_lookup="../results/srr_lookup.txt",
     output:
@@ -73,14 +73,14 @@ rule make_gene_rsem_dataframe:
     log: "../results/quant/Counts.log"
     benchmark: "../results/quant/Counts.benchmark"
     shell:
-        "python scripts/make_rsem_dataframe.py genes {input.gff} {input.srr_lookup} {input.series_matrix}"
+        "python scripts/make_rsem_dataframe.py genes {input.gtf} {input.srr_lookup} {input.series_matrix}"
         " {output.counts} {output.tpms} {output.names} {output.ids} &> {log}"
 
 rule make_isoform_rsem_dataframe:
     '''Take the results from RSEM and put them in a usable dataframe'''
     input:
         expand("../results/quant/{sra}.isoforms.results", sra=config['sra']),
-        gff=f"{GFF}.fix.gff3",
+        gtf=f"{GTF}.fix.gtf",
         series_matrix="../resources/GSE146773_series_matrix.txt",
         srr_lookup="../results/srr_lookup.txt",
     output:
@@ -94,5 +94,5 @@ rule make_isoform_rsem_dataframe:
     log: "../results/quant/Counts_Isoforms.log"
     benchmark: "../results/quant/Counts_Isoforms.benchmark"
     shell:
-        "python scripts/make_rsem_dataframe.py isoforms {input.gff} {input.srr_lookup} {input.series_matrix}"
+        "python scripts/make_rsem_dataframe.py isoforms {input.gtf} {input.srr_lookup} {input.series_matrix}"
         " {output.counts} {output.tpms} {output.names} {output.ids} &> {log}"

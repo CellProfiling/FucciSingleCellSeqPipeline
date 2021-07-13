@@ -22,9 +22,24 @@ TEST_ENSEMBL_GTF = f"../resources/ensembl/202122.gtf"
 #FA,GFF,GTF=TEST_GENOME_FA,TEST_ENSEMBL_GFF,TEST_ENSEMBL_GTF
 
 rule all:
+    '''Final targets of run'''
     input:
         "../results/final/ProteinPseudotimePlotting.csv.gz",
         "../results/final/RNAPseudotimePlotting.csv.gz",
+
+rule setup:
+    '''Setup rule for downloads prior to protected access machine'''
+    input:
+        GENOME_FA,
+        ENSEMBL_GFF,
+        ENSEMBL_GTF,
+        expand("../results/sra/{sra}/{sra}.sra", sra=config['sra']),
+        "../results/srr_lookup.txt",
+        "../results/input",
+    output: "../results/setup.txt"
+    log: "../results/setup.log"
+    conda: "envs/setup.yaml"
+    shell: "touch {output} 2> {log}"
 
 include: "rules/downloads.smk"
 include: "rules/align.smk"
