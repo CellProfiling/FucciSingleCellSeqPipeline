@@ -61,6 +61,9 @@ rule filter_fa:
     '''For testing, make a smaller genome'''
     input: GENOME_FA
     output: TEST_GENOME_FA
+    log: f"{TEST_GENOME_FA}.log"
+    benchmark: f"{TEST_GENOME_FA}.benchmark"
+    conda: "../envs/downloads.yaml"
     shell: "python scripts/filter_fasta.py {input} {output}"
 
 rule prefetch_sras_se:
