@@ -27,7 +27,7 @@ These can be updated, and the references will be downloaded automatically.
 In place of the last step above, you can use the scheduler like this:
 `snakemake -j 500 --cores 16 --cluster-config cluster_config.yaml --latency-wait 60 --keep-going --use-conda --cluster "sbatch -A {cluster.account} -t {cluster.time} -N {cluster.nodes} --cpus-per-task {threads} -p {cluster.partition}"`
 
-Replace 99 with the number of cores specified above in workflow/rules/align.smk and workflow/rules/quant.smk.
+Replace 99 with the number of cores specified above in `workflow/rules/align.smk` and `workflow/rules/quant.smk`.
 
 Where `cluster_config.yaml` may look like this:
 ```
@@ -47,7 +47,7 @@ __default__:
 1) Install conda: https://docs.conda.io/en/latest/miniconda.html
 2) Install snakemake using conda: `conda install -c conda-forge -c bioconda snakemake-minimal`
 2) If running the pipeline on protected access computer, predownload files by running `snakemake -j 16 ../results/setup.txt` on a machine with internet access.
-4) Make a tarball of the project with `cd ../.. && tar -cxvf FucciSingleCellSeqPipeline.zip FucciSingleCellSeqPipeline`
+4) Make a tarball of the project with `cd ../.. && tar -cxvf FucciSingleCellSeqPipeline.zip FucciSingleCellSeqPipeline` and transfer it to the protected access cluster.
 
 ## Citation
 
