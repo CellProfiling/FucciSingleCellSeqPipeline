@@ -19,13 +19,35 @@ These can be updated, and the references will be downloaded automatically.
 
 1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline/workflow`
 1) Install conda: https://docs.conda.io/en/latest/miniconda.html
-2) Install snakemake using conda: `conda install -c conda-forge snakemake-minimal`
+2) Install snakemake using conda: `conda install -c conda-forge -c bioconda snakemake-minimal`
 4) Run the workflow: `snakemake --use-conda --cores 24 --resources mem_mb=100000`, where you can subsitute the max number of cores and max memory allocation. At least 54 GB of free memory should be available.
 
 ## Usage on cluster
 
+In place of the last step above, you can use the scheduler like this:
+`snakemake -j 500 --cores 16 --cluster-config cluster_config.yaml --latency-wait 60 --keep-going --use-conda --cluster "sbatch -A {cluster.account} -t {cluster.time} -N {cluster.nodes} --cpus-per-task {threads} -p {cluster.partition}"`
+
+Replace 99 with the number of cores specified above in workflow/rules/align.smk and workflow/rules/quant.smk.
+
+Where `cluster_config.yaml` may look like this:
+```
+__default__:
+    account: sens2020535
+    partition: core
+    time: 2-0 # time limit for each job
+    nodes: 1
+    ntasks-per-node: 16 #Request n cores be allocated per node.
+    output: ../results/slurmout/spritz-%j.out
+    error: ../results/slurmerr/spritz-%j.err
+```
+
+## Usage on protected access cluster
+
 1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline/workflow`
-2) If 
+1) Install conda: https://docs.conda.io/en/latest/miniconda.html
+2) Install snakemake using conda: `conda install -c conda-forge -c bioconda snakemake-minimal`
+2) If running the pipeline on protected access computer, predownload files by running `snakemake -j 16 ../results/setup.txt` on a machine with internet access.
+4) Make a tarball of the project with `cd ../.. && tar -cxvf FucciSingleCellSeqPipeline.zip FucciSingleCellSeqPipeline`
 
 ## Citation
 

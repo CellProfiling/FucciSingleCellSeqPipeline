@@ -24,9 +24,12 @@ with open(sys.argv[2], "w") as outff:
                 f"ID=transcript:{id};Parent=gene:{id};Name={id};biotype=;transcript_id={id}"]]
             exon_fields = [str(x) for x in [id, "ERCC", "exon", 1, len(seq_record.seq), ".", "+", ".",
                 f"Parent=transcript:{id};Name={id};exon_id={id}"]]
+            transcript_fields_gtf = [str(x) for x in [id, "ERCC", "transcript", 1, len(seq_record.seq), ".", "+", ".",
+                f"gene_id \"gene:{id}\"; transcript_id \"transcript:{id}\"; gene_name \"{id}\"; transcript_name \"{id}\"; gene_biotype \"\"; transcript_biotype \"\";"]]
             exon_fields_gtf = [str(x) for x in [id, "ERCC", "exon", 1, len(seq_record.seq), ".", "+", ".",
-                f"gene_id \"gene:{id}\"; transcript_id \"transcript:{id}\"; exon_number \"1\"; gene_name \"{id}\"; transcript_name \"{id}\";"]]
+                f"gene_id \"gene:{id}\"; transcript_id \"transcript:{id}\"; exon_number \"1\"; gene_name \"{id}\"; transcript_name \"{id}\"; gene_biotype \"\"; transcript_biotype \"\";"]]
             if isgtf:
+                outff.write("\t".join(transcript_fields_gtf) + "\n")
                 outff.write("\t".join(exon_fields_gtf) + "\n")
             else:
                 outff.write("\t".join(gene_fields) + "\n")

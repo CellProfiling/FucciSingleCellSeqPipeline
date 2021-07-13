@@ -41,7 +41,9 @@ rule downloadInputs:
         " && unzip -d {params.outdir} {output}.zip) 2> {log}"
 
 rule ProteinCellCycleClusters:
-    input: "../results/input/", "../results/newinputs/RNAData/"
+    input:
+        "../results/input/",
+        "../results/newinputs/RNAData/"
     output: "../results/output/pickles/mockbulk_phases.npy"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/1_ProteinCellCycleClusters.log"

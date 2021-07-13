@@ -35,6 +35,7 @@ rule setup:
         ENSEMBL_GTF,
         expand("../results/sra/{sra}/{sra}.sra", sra=config['sra']),
         "../results/srr_lookup.txt",
+        "../results/input",
     output: "../results/setup.txt"
     log: "../results/setup.log"
     conda: "envs/setup.yaml"
