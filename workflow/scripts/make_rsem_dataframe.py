@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import os
 import glob
+import re
 
 USAGE = "python make_rsem_dataframe.py <level> <gtf> <srrLookup> <seriesMatrix> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
 if len(sys.argv) != 9: print(USAGE); exit();
@@ -45,9 +46,11 @@ series_matrix_lines = open(series_matrix).readlines()
 cells, srr, has_srr = [], [], []
 for line in series_matrix_lines:
     if line.startswith('!Sample_title'):
-        cells=[x.strip('"').strip('Single U2OS cell ').strip() for x in line.split('\t')[1:]]
+        pattern = re.compile(r'cell ([A-Z][0-9]+_[0-9]+)')
+        cells = [pattern.search(x).group(1) for x in line.split('\t')[1:]]
     if line.startswith('!Sample_relation') and "SRX" in line:
-        srrs = [x.split('=')[1][:-1].strip() for x in line.split('\t')[1:]]
+        pattern = re.compile(r'=(SRX[0-9]+)')
+        srrs = [pattern.search(x).group(1) for x in line.split('\t')[1:]]
         has_srr = [x in srr_lookup for x in srrs]
         srr = [srr_lookup[x] for x in srrs if x in srr_lookup]
 cells=np.array(cells)[has_srr] # for testing
