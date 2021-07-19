@@ -47,6 +47,7 @@ rule ProteinCellCycleClusters:
     output: "../results/output/pickles/mockbulk_phases.npy"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/1_ProteinCellCycleClusters.log"
+    threads: workflow.cores # use a whole node
     shell: "cd ../results && python ../SingleCellProteogenomics/1_ProteinCellCycleClusters.py &> {log}"
 
 rule ProteinFucciPsuedotime:
@@ -54,6 +55,7 @@ rule ProteinFucciPsuedotime:
     output: "../results/output/ProteinPseudotimePlotting.csv.gz"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/2_ProteinFucciPsuedotime.log"
+    threads: workflow.cores # use a whole node
     shell: "cd ../results && python ../SingleCellProteogenomics/2_ProteinFucciPsuedotime.py &> {log}"
 
 rule RNAFucciPseudotime:
@@ -61,6 +63,7 @@ rule RNAFucciPseudotime:
     output: "../results/output/RNAPseudotimePlotting.csv.gz"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/3_RNAFucciPseudotime.log"
+    threads: workflow.cores # use a whole node
     shell: "cd ../results && python ../SingleCellProteogenomics/3_RNAFucciPseudotime.py &> {log}"
 
 rule TemporalDelay:
@@ -68,6 +71,7 @@ rule TemporalDelay:
     output: "../results/output/diff_max_pol.csv"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/4_TemporalDelay.log"
+    threads: workflow.cores # use a whole node
     shell: "cd ../results && python ../SingleCellProteogenomics/4_TemporalDelay.py &> {log}"
 
 rule ProteinProperties:
@@ -75,21 +79,21 @@ rule ProteinProperties:
     output: "../results/output/upstreamKinaseResults.csv"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/5_ProteinProperties.log"
+    threads: workflow.cores # use a whole node
     shell: "cd ../results && python ../SingleCellProteogenomics/5_ProteinProperties.py &> {log}"
 
 rule SingleCellProteogenomics_final:
     input:
-        "../results/output/ProteinPseudotimePlotting.csv.gz",
-        "../results/output/RNAPseudotimePlotting.csv.gz",
-        "../results/output/upstreamKinaseResults.csv" # prompt full run
+        protein="../results/output/ProteinPseudotimePlotting.csv.gz",
+        rna="../results/output/RNAPseudotimePlotting.csv.gz",
+        kinase="../results/output/upstreamKinaseResults.csv" # prompt full run
     output:
         protein="../results/final/ProteinPseudotimePlotting.csv.gz",
         rna="../results/final/RNAPseudotimePlotting.csv.gz",
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/SingleCellProteogenomics_run.log"
     benchmark: "../results/SingleCellProteogenomics_run.benchmark"
-    params: scp_results=lambda w, input: os.path.dirname(input[0]),
     threads: 1
     shell:
-        "(cp {params.scp_results}/ProteinPseudotimePlotting.csv.gz {output.protein} && "
-        "cp {params.scp_results}/RNAPseudotimePlotting.csv.gz {output.rna}) &> {log}"
+        "(cp {input.protein} {output.protein} && "
+        "cp {input.rna} {output.rna}) &> {log}"

@@ -51,8 +51,14 @@ def get_prefix(file):
 doUseGene = level.startswith("gene")
 ids = [line.split('\t')[0].strip("gene:").strip("transcript:") for line in open(files[0])]
 ids[0] = "gene_id" if doUseGene else "transcript_id"
-names = [gene_id_to_name[id] if doUseGene else transcript_id_to_name[id] for id in ids[1:]]
-biotypes = [gene_id_to_biotype[id] if doUseGene else transcript_id_to_biotype[id] for id in ids[1:]]
+names = [
+    (gene_id_to_name[id] if id in gene_id_to_name else id) if doUseGene else \
+    (transcript_id_to_name[id] if id in transcript_id_to_name else id) \
+    for id in ids[1:]]
+biotypes = [
+    (gene_id_to_biotype[id] if id in gene_id_to_biotype else "") if doUseGene else \
+    (transcript_id_to_biotype[id] if id in transcript_id_to_biotype else "") \
+    for id in ids[1:]]
 counts = [np.array(ids)]
 tpms = [np.array(ids)]
 for file in files:
@@ -60,6 +66,7 @@ for file in files:
     tpms.append(np.array([line.split('\t')[5] for line in open(file)]))
     print("reading "+ get_prefix(file))
 
+# TODO: reduce memory footprint of writing output, especially for isoform files
 print(f"Saving to {outcounts} ...")
 dataframe = np.row_stack(counts)
 dataframe[1:,0] = [get_prefix(file) for file in files]
