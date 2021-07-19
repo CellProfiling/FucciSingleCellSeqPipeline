@@ -1,5 +1,7 @@
 channels:
   - bioconda
+  - conda-forge
 dependencies:
   - velocyto.py==0.17.17
   - entrez-direct # for srr_lookup
+  - scvelo==0.2.3
