@@ -87,7 +87,6 @@ rule SingleCellProteogenomics_final:
     input:
         protein="../results/output/ProteinPseudotimePlotting.csv.gz",
         rna="../results/output/RNAPseudotimePlotting.csv.gz",
-        kinase="../results/output/upstreamKinaseResults.csv" # prompt full run
     output:
         protein="../results/final/ProteinPseudotimePlotting.csv.gz",
         rna="../results/final/RNAPseudotimePlotting.csv.gz",
