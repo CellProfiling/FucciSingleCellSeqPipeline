@@ -1,4 +1,4 @@
-configfile: "config/SraAccList.yaml"
+configfile: "config/FucciSingleCell.yaml"
 
 GENOME_VERSION = "GRCh38"
 ENSEMBL_VERSION = config["ensembl_version"] 

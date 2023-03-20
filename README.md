@@ -12,7 +12,7 @@ This data is downloaded automatically in this pipeline.
 
 ## Updating the Ensembl version
 
-The genome and Ensembl versions are located at the top of the file `Snakefile`.
+The genome and Ensembl versions are located at the top of the file `workflow/config/FucciSingleCell.yaml`.
 These can be updated, and the references will be downloaded automatically.
 
 ## Usage
