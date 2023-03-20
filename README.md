@@ -29,7 +29,7 @@ In place of installing conda, you may need to activate it as a module, such as b
 Adapt `config/cluster_config.yaml` for your needs.
 
 In place of the last step above, you can use the scheduler like this:
-`snakemake -j 500 --cores 16 --cluster-config config/cluster_config.yaml --latency-wait 60 --keep-going --use-conda --conda-frontend mamba --cluster "sbatch -A {cluster.account} -t {cluster.time} -N {cluster.nodes} --cpus-per-task {threads} -p {cluster.partition}"`
+`snakemake -j 500 --cores 16 --cluster-config config/cluster_config.yaml --latency-wait 60 --keep-going --use-conda --conda-frontend mamba --cluster "sbatch -t {cluster.time} -N {cluster.nodes} --cpus-per-task {threads} -p {cluster.partition}"`
 
 ## Usage on protected access cluster
 

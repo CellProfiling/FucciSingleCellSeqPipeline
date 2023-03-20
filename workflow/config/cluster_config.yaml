@@ -1,5 +1,5 @@
 __default__:
-#    account: sens2020535
+#    account: sens2020535  # Can be specified as sbatch option with `-A {cluster.account}`
     partition: core
     time: 2-0 # time limit for each job
     nodes: 1
