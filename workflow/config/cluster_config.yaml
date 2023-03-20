@@ -1,5 +1,5 @@
 __default__:
-    account: sens2020535
+#    account: sens2020535
     partition: core
     time: 2-0 # time limit for each job
     nodes: 1

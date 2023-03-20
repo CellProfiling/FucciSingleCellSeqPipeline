@@ -2,8 +2,19 @@ import os
 
 INPUTID="149ICTtieYjuKWZoLwRLzimwff0n6eWqw"
 
+rule downloadInputs:
+    output: directory("../results/input")
+    conda: "../../SingleCellProteogenomics/workflow/envs/download.yaml"
+    log: "../results/SingleCellProteogenomics_downloadInputs.log"
+    params: outdir=lambda w, output: os.path.dirname(output[0]),
+    shell:
+        "(gdown -O {output}.zip"
+        f" \"https://drive.google.com/uc?export=download&id={INPUTID}\""
+        " && unzip -d {params.outdir} {output}.zip) 2> {log}"
+
 rule SingleCellProteogenomics_copyResults:
     input:
+        input="../results/input",
         quant=[
             "../results/quant/Counts.csv",
             "../results/quant/Counts.csv.ercc.csv",
@@ -23,27 +34,17 @@ rule SingleCellProteogenomics_copyResults:
             "../results/velocity/a.loom",
             "../results/velocity/a.obs_names.csv",
         ],
-    output: directory("../results/newinputs/RNAData/")
+    output: directory("../results/newinput/RNAData_bkup/")
     conda: "../envs/downloads.yaml"
+    params: rnadir=lambda w, output: output[0].split("_")[0],
     log: "../results/SingleCellProteogenomics_copyResults.log"
     benchmark: "../results/SingleCellProteogenomics_copyResults.benchmark"
     shell:
-        "(mkdir -p {output} && cp {input.quant} {input.ids} {input.velocity} {output}) &> {log}"
+        "(cp -r {params.rnadir}/* {output} && "
+        "cp {input.quant} {input.ids} {input.velocity} {params.rnadir}) &> {log}"
 
-rule downloadInputs:
-    output: directory("../results/input")
-    conda: "../../SingleCellProteogenomics/workflow/envs/download.yaml"
-    log: "../results/SingleCellProteogenomics_downloadInputs.log"
-    params: outdir=lambda w, output: os.path.dirname(output[0]),
-    shell:
-        "(gdown -O {output}.zip"
-        f" \"https://drive.google.com/uc?export=download&id={INPUTID}\""
-        " && unzip -d {params.outdir} {output}.zip) 2> {log}"
-
-rule ProteinCellCycleClusters:
-    input:
-        "../results/input/",
-        "../results/newinputs/RNAData/"
+rule SingleCellProteogenomics:
+    input: "../results/newinput/RNAData_bkup/"
     output: "../results/output/pickles/mockbulk_phases.npy"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/1_ProteinCellCycleClusters.log"
@@ -56,7 +57,7 @@ rule ProteinFucciPsuedotime:
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/2_ProteinFucciPsuedotime.log"
     threads: workflow.cores # use a whole node
-    shell: "cd ../results && python ../SingleCellProteogenomics/2_ProteinFucciPsuedotime.py &> {log}"
+    shell: "cd ../results && python ../SingleCellProteogenomics/2_ProteinFucciPsuedotime.py --quicker &> {log}"
 
 rule RNAFucciPseudotime:
     input: "../results/output/ProteinPseudotimePlotting.csv.gz"
@@ -64,7 +65,7 @@ rule RNAFucciPseudotime:
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/3_RNAFucciPseudotime.log"
     threads: workflow.cores # use a whole node
-    shell: "cd ../results && python ../SingleCellProteogenomics/3_RNAFucciPseudotime.py &> {log}"
+    shell: "cd ../results && python ../SingleCellProteogenomics/3_RNAFucciPseudotime.py --quicker &> {log}"
 
 rule TemporalDelay:
     input: "../results/output/RNAPseudotimePlotting.csv.gz"

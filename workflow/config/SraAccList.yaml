@@ -1,3 +1,4 @@
+ensembl_version: "109" # ensembl version
 species: "Homo_sapiens" # ensembl species name
 sra:
   - SRR11286626

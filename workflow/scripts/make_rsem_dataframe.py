@@ -51,6 +51,7 @@ def get_prefix(file):
 doUseGene = level.startswith("gene")
 ids = [line.split('\t')[0].strip("gene:").strip("transcript:") for line in open(files[0])]
 ids[0] = "gene_id" if doUseGene else "transcript_id"
+<<<<<<< HEAD
 names = [
     (gene_id_to_name[id] if id in gene_id_to_name else id) if doUseGene else \
     (transcript_id_to_name[id] if id in transcript_id_to_name else id) \
@@ -73,13 +74,28 @@ dataframe[1:,0] = [get_prefix(file) for file in files]
 pddf = pd.DataFrame(dataframe[1:,1:], index=dataframe[1:,0], columns=dataframe[0,1:]).sort_index()
 pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outcounts)
 pddf.filter(regex="ERCC").to_csv(outcounts + ".ercc.csv")
+=======
+names = [gene_id_to_name[id] if doUseGene else transcript_id_to_name[id] for id in ids[1:]]
+biotypes = [gene_id_to_biotype[id] if doUseGene else transcript_id_to_biotype[id] for id in ids[1:]]
 
-print(f"Saving to {outtpms} ...")
-dataframe = np.row_stack(tpms)
-dataframe[1:,0] = [get_prefix(file) for file in files]
-pddf = pd.DataFrame(dataframe[1:,1:], index=dataframe[1:,0], columns=dataframe[0,1:]).sort_index()
-pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outtpms)
-pddf.filter(regex="ERCC").to_csv(outtpms + ".ercc.csv")
+>>>>>>> master
+
+def save_output(outfilename, id_array, in_files, col_idx, doUseGene):
+    value_array = [np.array(id_array)]
+    print(f"Reading data files to create {outfilename} ...")
+    for file in files:
+        value_array.append(np.array([line.split('\t')[col_idx] for line in open(file)]))
+        print("reading " + get_prefix(file))
+    print(f"Saving to {outfilename} ...")
+    dataframe = np.row_stack(value_array)
+    dataframe[1:, 0] = [get_prefix(file) for file in in_files]
+    pddf = pd.DataFrame(dataframe[1:, 1:], index=dataframe[1:, 0], columns=dataframe[0, 1:]).sort_index()
+    pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outfilename)
+    pddf.filter(regex="ERCC").to_csv(outfilename + ".ercc.csv")
+
+
+for (filename, col_idx) in [(outcounts, 4), (outtpms, 5,)]:
+    save_output(filename, ids, files, col_idx, doUseGene)
 
 print(f"Saving to {outn} ...")
 np.savetxt(outn, np.column_stack((ids[1:], names, biotypes)), delimiter=",", fmt="%s")
