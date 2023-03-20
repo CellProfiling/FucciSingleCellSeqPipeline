@@ -51,7 +51,6 @@ def get_prefix(file):
 doUseGene = level.startswith("gene")
 ids = [line.split('\t')[0].strip("gene:").strip("transcript:") for line in open(files[0])]
 ids[0] = "gene_id" if doUseGene else "transcript_id"
-<<<<<<< HEAD
 names = [
     (gene_id_to_name[id] if id in gene_id_to_name else id) if doUseGene else \
     (transcript_id_to_name[id] if id in transcript_id_to_name else id) \
@@ -74,11 +73,6 @@ dataframe[1:,0] = [get_prefix(file) for file in files]
 pddf = pd.DataFrame(dataframe[1:,1:], index=dataframe[1:,0], columns=dataframe[0,1:]).sort_index()
 pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outcounts)
 pddf.filter(regex="ERCC").to_csv(outcounts + ".ercc.csv")
-=======
-names = [gene_id_to_name[id] if doUseGene else transcript_id_to_name[id] for id in ids[1:]]
-biotypes = [gene_id_to_biotype[id] if doUseGene else transcript_id_to_biotype[id] for id in ids[1:]]
-
->>>>>>> master
 
 def save_output(outfilename, id_array, in_files, col_idx, doUseGene):
     value_array = [np.array(id_array)]
