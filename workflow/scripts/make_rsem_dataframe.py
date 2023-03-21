@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import os
 import glob
-import re
 from srr_functions import create_srr_to_cell
 
 USAGE = "python make_rsem_dataframe.py <level> <gtf> <srrLookup> <seriesMatrix> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
