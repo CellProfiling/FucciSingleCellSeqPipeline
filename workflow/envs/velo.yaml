@@ -4,4 +4,5 @@ channels:
 dependencies:
   - velocyto.py==0.17.17
   - entrez-direct # for srr_lookup
-  - scvelo==0.2.3
+  - scvelo
+  - scanpy==1.9.2

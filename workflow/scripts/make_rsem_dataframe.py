@@ -27,8 +27,12 @@ with open(gtf) as gtfhandle:
                 if len(item) < 2:
                     print(f"Error: not a key-value pair: {attributes} {item} in line:\n{line}")
                 attributes[item[0]] = item[1]
+            if not "gene_name" in attributes:
+                attributes["gene_name"] = attributes["gene_id"]
+            if not "transcript_name" in attributes:
+                attributes["transcript_name"] = attributes["transcript_id"]
             if any([x not in attributes for x in ["gene_id", "gene_name", "transcript_id", "transcript_name"]]):
-                print("Error: \"gene_id\", \"gene_name\", \"transcript_id\", or \"transcript_name\" not found in line:\n" + line)
+                print("Error: \"gene_id\", \"gene_name\", \"transcript_id\", or \"transcript_name\" not found in line:\n" + "\t".join(line))
                 exit(1)
             gene_id_to_name[attributes["gene_id"].strip("gene:")] = attributes["gene_name"]
             gene_id_to_biotype[attributes["gene_id"].strip("gene:")] = attributes["gene_biotype"] if "gene_biotype" in attributes else ""
