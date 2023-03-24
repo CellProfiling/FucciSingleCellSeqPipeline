@@ -4,3 +4,5 @@ resources/ERCC.filtered.*
 results
 input
 **/.DS_Store
+workflow/slurm*
+__pycache__

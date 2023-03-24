@@ -12,42 +12,37 @@ This data is downloaded automatically in this pipeline.
 
 ## Updating the Ensembl version
 
-The genome and Ensembl versions are located at the top of the file `Snakefile`.
+The genome and Ensembl versions are located at the top of the file `workflow/config/FucciSingleCell.yaml`.
 These can be updated, and the references will be downloaded automatically.
 
 ## Usage
 
 1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline/workflow`
 1) Install conda: https://docs.conda.io/en/latest/miniconda.html
-2) Install snakemake using conda: `conda install -c conda-forge -c bioconda snakemake-minimal`
-4) Run the workflow: `snakemake --use-conda --cores 24 --resources mem_mb=100000`, where you can subsitute the max number of cores and max memory allocation. At least 54 GB of free memory should be available.
+2) Create and activate setup environment: `conda env create -n fuccisetup -f envs/setup.yaml && conda activate fuccisetup`
+4) Run the workflow: `snakemake --use-conda --conda-frontend mamba --cores 24 --resources mem_mb=100000`, where you can subsitute the max number of cores and max memory allocation. At least 54 GB of free memory should be available.
 
 ## Usage on cluster
 
+In place of installing conda, you may need to activate it as a module, such as by `module load conda` and then follow the instructions to initialize it.
+
+Adapt `config/cluster_config.yaml` for your needs.
+
 In place of the last step above, you can use the scheduler like this:
-`snakemake -j 500 --cores 16 --cluster-config cluster_config.yaml --latency-wait 60 --keep-going --use-conda --cluster "sbatch -A {cluster.account} -t {cluster.time} -N {cluster.nodes} --cpus-per-task {threads} -p {cluster.partition}"`
-
-Replace 99 with the number of cores specified above in `workflow/rules/align.smk` and `workflow/rules/quant.smk`.
-
-Where `cluster_config.yaml` may look like this:
-```
-__default__:
-    account: sens2020535
-    partition: core
-    time: 2-0 # time limit for each job
-    nodes: 1
-    ntasks-per-node: 16 #Request n cores be allocated per node.
-    output: ../results/slurmout/spritz-%j.out
-    error: ../results/slurmerr/spritz-%j.err
-```
+`snakemake -j 500 --cores 16 --cluster-config config/cluster_config.yaml --latency-wait 60 --keep-going --use-conda --conda-frontend mamba --cluster "sbatch -t {cluster.time} -N {cluster.nodes} --cpus-per-task {threads} -p {cluster.partition}"`
 
 ## Usage on protected access cluster
 
-1) Clone repository and initialize submodules: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline/workflow`
-1) Install conda: https://docs.conda.io/en/latest/miniconda.html
-2) Install snakemake using conda: `conda install -c conda-forge -c bioconda snakemake-minimal`
-2) If running the pipeline on protected access computer, predownload files by running `snakemake -j 16 ../results/setup.txt` on a machine with internet access.
-4) Make a tarball of the project with `cd ../.. && tar -cxvf FucciSingleCellSeqPipeline.zip FucciSingleCellSeqPipeline` and transfer it to the protected access cluster.
+1) Clone repository and initialize submodules on your local machine: `git clone --recurse-submodules https://github.com/CellProfiling/FucciSingleCellSeqPipeline.git && cd FucciSingleCellSeqPipeline/workflow`
+2) Install conda: https://docs.conda.io/en/latest/miniconda.html
+3) Create and activate setup environment: `conda env create -n fuccisetup -f envs/setup.yaml && conda activate fuccisetup`
+4) If running the pipeline on protected access computer, predownload files by running `snakemake -j 16 ../results/setup.txt` on a machine with internet access.
+5) Make a tarball of the project with `cd ../.. && tar -cxvf FucciSingleCellSeqPipeline.zip FucciSingleCellSeqPipeline` and transfer it to the protected access cluster.
+6) Load conda as a module on the protected access cluster, such as with `module load conda`, and follow the instructions to activate it.
+7) Create and activate setup environment: `conda env create -n fuccisetup -f envs/setup.yaml && conda activate fuccisetup`
+8) Adapt `config/cluster_config.yaml` for your needs.
+9) Use the scheduler from snakemake like this:
+`snakemake -j 500 --cores 16 --cluster-config config/cluster_config.yaml --latency-wait 60 --keep-going --use-conda --conda-frontend mamba --cluster "sbatch -A {cluster.account} -t {cluster.time} -N {cluster.nodes} --cpus-per-task {threads} -p {cluster.partition}"`
 
 ## Citation
 

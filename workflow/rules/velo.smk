@@ -1,8 +1,7 @@
 rule velocity_analysis:
     '''Run the velocity analysis'''
     input:
-        unload_genome="../results/align/unloaded_2pass",
-        gtf=f"{GTF}.fix.gtf",
+        gtf=ENSEMBL_GTF,
         bams=expand("../results/align/{sra}Aligned.sortedByCoord.out.bam", sra=config['sra'])
     output: "../results/velocity/a.loom"
     conda: "../envs/velo.yaml"
@@ -10,7 +9,9 @@ rule velocity_analysis:
     benchmark: "../results/velocity.benchmark"
     params:
         outfolder=lambda w, output: os.path.dirname(output[0]),
-        sampleid="a" # used this historically, so just keeping it consistent
+        sampleid="a", # used this historically, so just keeping it consistent
+    threads: 1
+    resources: mem_mb=7000
     shell:
         "velocyto run-smartseq2 --outputfolder {params.outfolder}"
         " --sampleid {params.sampleid} {input.bams} {input.gtf} &> {log}"

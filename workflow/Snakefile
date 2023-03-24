@@ -1,7 +1,7 @@
-configfile: "config/SraAccList.yaml"
+configfile: "config/FucciSingleCell.yaml"
 
 GENOME_VERSION = "GRCh38"
-ENSEMBL_VERSION = "103"
+ENSEMBL_VERSION = config["ensembl_version"] 
 SPECIES = config["species"]
 SPECIES_LOWER = SPECIES.lower()
 REF = f"{SPECIES}.{GENOME_VERSION}"
@@ -18,8 +18,8 @@ TEST_GENOME_FA = f"../resources/ensembl/202122.fa"
 TEST_ENSEMBL_GFF = f"../resources/ensembl/202122.gff3"
 TEST_ENSEMBL_GTF = f"../resources/ensembl/202122.gtf"
 
-# Uncomment to trigger testing
-#FA,GFF,GTF=TEST_GENOME_FA,TEST_ENSEMBL_GFF,TEST_ENSEMBL_GTF
+if config["test"]:
+    FA,GFF,GTF=TEST_GENOME_FA,TEST_ENSEMBL_GFF,TEST_ENSEMBL_GTF
 
 rule all:
     '''Final targets of run'''

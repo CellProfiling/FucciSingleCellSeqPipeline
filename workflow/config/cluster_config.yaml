@@ -1,0 +1,10 @@
+__default__:
+#    account: sens2020535  # Can be specified as sbatch option with `-A {cluster.account}`
+#    partition: core
+    time: 2-0 # time limit for each job
+    nodes: 1
+    ntasks-per-node: 16 #Request n cores be allocated per node.
+#    memory: 112000
+#    chdir: /directory/to/change/to
+    output: ../results/slurmout/spritz-%j.out
+    error: ../results/slurmerr/spritz-%j.err

@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import os
 import glob
-import re
 from srr_functions import create_srr_to_cell
 
 USAGE = "python make_rsem_dataframe.py <level> <gtf> <srrLookup> <seriesMatrix> <outCountsFile> <outTpmsFile> <namesOut> <idsOut>"
@@ -28,8 +27,12 @@ with open(gtf) as gtfhandle:
                 if len(item) < 2:
                     print(f"Error: not a key-value pair: {attributes} {item} in line:\n{line}")
                 attributes[item[0]] = item[1]
+            if not "gene_name" in attributes:
+                attributes["gene_name"] = attributes["gene_id"]
+            if not "transcript_name" in attributes:
+                attributes["transcript_name"] = attributes["transcript_id"]
             if any([x not in attributes for x in ["gene_id", "gene_name", "transcript_id", "transcript_name"]]):
-                print("Error: \"gene_id\", \"gene_name\", \"transcript_id\", or \"transcript_name\" not found in line:\n" + line)
+                print("Error: \"gene_id\", \"gene_name\", \"transcript_id\", or \"transcript_name\" not found in line:\n" + "\t".join(line))
                 exit(1)
             gene_id_to_name[attributes["gene_id"].strip("gene:")] = attributes["gene_name"]
             gene_id_to_biotype[attributes["gene_id"].strip("gene:")] = attributes["gene_biotype"] if "gene_biotype" in attributes else ""
@@ -51,31 +54,49 @@ def get_prefix(file):
 doUseGene = level.startswith("gene")
 ids = [line.split('\t')[0].strip("gene:").strip("transcript:") for line in open(files[0])]
 ids[0] = "gene_id" if doUseGene else "transcript_id"
-names = [gene_id_to_name[id] if doUseGene else transcript_id_to_name[id] for id in ids[1:]]
-biotypes = [gene_id_to_biotype[id] if doUseGene else transcript_id_to_biotype[id] for id in ids[1:]]
-
+names = [
+    (gene_id_to_name[id] if id in gene_id_to_name else id) if doUseGene else \
+    (transcript_id_to_name[id] if id in transcript_id_to_name else id) \
+    for id in ids[1:]]
+biotypes = [
+    (gene_id_to_biotype[id] if id in gene_id_to_biotype else "") if doUseGene else \
+    (transcript_id_to_biotype[id] if id in transcript_id_to_biotype else "") \
+    for id in ids[1:]]
 
 def save_output(outfilename, id_array, in_files, col_idx, doUseGene):
-    value_array = [np.array(id_array)]
     print(f"Reading data files to create {outfilename} ...")
-    for file in files:
-        value_array.append(np.array([line.split('\t')[col_idx] for line in open(file)]))
-        print("reading " + get_prefix(file))
-    print(f"Saving to {outfilename} ...")
-    dataframe = np.row_stack(value_array)
-    dataframe[1:, 0] = [get_prefix(file) for file in in_files]
-    pddf = pd.DataFrame(dataframe[1:, 1:], index=dataframe[1:, 0], columns=dataframe[0, 1:]).sort_index()
-    pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outfilename)
-    pddf.filter(regex="ERCC").to_csv(outfilename + ".ercc.csv")
 
+    with open(outfilename, "w") as ensg_output_file, open(outfilename + ".ercc.csv", "w") as ercc_output_file:
+        ensg_output_file.write(",".join([""] + id_array[1:]) + "\n")
+        ercc_output_file.write(",".join([""] + id_array[1:]) + "\n")
+        prefixes = [get_prefix(file) for file in in_files]
+        file_order = np.argsort(prefixes)
+        for file in np.array(in_files)[file_order]:
+            prefix = get_prefix(file)
+            print(f"reading {prefix}")
 
-for (filename, col_idx) in [(outcounts, 4), (outtpms, 5,)]:
+            df = pd.read_csv(file, sep='\t', header=None, usecols=[0, col_idx], names=['id', 'value'])
+            df['id'] = df['id'].str.strip('gene:').str.strip('transcript:')
+            df = df.set_index('id').transpose()
+            df.index = [prefix]
+
+            ensg_df = df.filter(regex="ENSG" if doUseGene else "ENST")
+            ercc_df = df.filter(regex="ERCC")
+
+            ensg_output_file.write(ensg_df.to_csv(header=False, index=True))
+            ercc_output_file.write(ercc_df.to_csv(header=False, index=True))
+
+    print(f"Data saved to {outfilename} and {outfilename}.ercc.csv")
+
+for (filename, col_idx) in [(outcounts, 4), (outtpms, 5)]:
     save_output(filename, ids, files, col_idx, doUseGene)
 
 print(f"Saving to {outn} ...")
 np.savetxt(outn, np.column_stack((ids[1:], names, biotypes)), delimiter=",", fmt="%s")
 
 print(f"Saving to {outids} ...")
-np.savetxt(outids, np.column_stack((list(transcript_id_to_gene.keys()), list(transcript_id_to_gene.values()))), delimiter=",", fmt="%s")
+np.savetxt(outids, 
+    np.column_stack((list(transcript_id_to_gene.keys()), 
+        list(transcript_id_to_gene.values()))), delimiter=",", fmt="%s")
 
 print("Done.")

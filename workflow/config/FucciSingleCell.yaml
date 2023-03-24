@@ -1,4 +1,6 @@
+ensembl_version: "109" # ensembl version
 species: "Homo_sapiens" # ensembl species name
+test: False 
 sra:
   - SRR11286626
   - SRR11286627

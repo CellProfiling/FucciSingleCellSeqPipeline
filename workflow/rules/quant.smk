@@ -18,7 +18,7 @@ rule rsem_reference:
         fa=f"{RSEM_REF_FOLDER}RsemReference.transcripts.fa",
         suffix=f"{RSEM_REF_FOLDER}SA"
     params: prefix=lambda w, output: output.grp[:-4]
-    threads: 99 # can do fewer without STAR references
+    threads: workflow.cores # can do fewer without STAR references
     log: "../resources/ensembl/prepare-reference.log"
     benchmark: "../resources/ensembl/prepare-reference.benchmark"
     conda: "../envs/quant.yaml"
@@ -72,6 +72,8 @@ rule make_gene_rsem_dataframe:
     conda: "../envs/quant.yaml"
     log: "../results/quant/Counts.log"
     benchmark: "../results/quant/Counts.benchmark"
+    threads: workflow.cores # make sure this gets a full node, since it requires ~60 GB RAM
+    resources: mem_mb=112000
     shell:
         "python scripts/make_rsem_dataframe.py genes {input.gtf} {input.srr_lookup} {input.series_matrix}"
         " {output.counts} {output.tpms} {output.names} {output.ids} &> {log}"
@@ -93,6 +95,8 @@ rule make_isoform_rsem_dataframe:
     conda: "../envs/quant.yaml"
     log: "../results/quant/Counts_Isoforms.log"
     benchmark: "../results/quant/Counts_Isoforms.benchmark"
+    threads: workflow.cores # make sure this gets a full node, since it requires ~80 GB RAM
+    resources: mem_mb=112000
     shell:
         "python scripts/make_rsem_dataframe.py isoforms {input.gtf} {input.srr_lookup} {input.series_matrix}"
         " {output.counts} {output.tpms} {output.names} {output.ids} &> {log}"
