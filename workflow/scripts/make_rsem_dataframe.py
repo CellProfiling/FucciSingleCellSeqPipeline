@@ -62,42 +62,41 @@ biotypes = [
     (gene_id_to_biotype[id] if id in gene_id_to_biotype else "") if doUseGene else \
     (transcript_id_to_biotype[id] if id in transcript_id_to_biotype else "") \
     for id in ids[1:]]
-counts = [np.array(ids)]
-tpms = [np.array(ids)]
-for file in files:
-    counts.append(np.array([line.split('\t')[4] for line in open(file)]))
-    tpms.append(np.array([line.split('\t')[5] for line in open(file)]))
-    print("reading "+ get_prefix(file))
-
-# TODO: reduce memory footprint of writing output, especially for isoform files
-print(f"Saving to {outcounts} ...")
-dataframe = np.row_stack(counts)
-dataframe[1:,0] = [get_prefix(file) for file in files]
-pddf = pd.DataFrame(dataframe[1:,1:], index=dataframe[1:,0], columns=dataframe[0,1:]).sort_index()
-pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outcounts)
-pddf.filter(regex="ERCC").to_csv(outcounts + ".ercc.csv")
 
 def save_output(outfilename, id_array, in_files, col_idx, doUseGene):
-    value_array = [np.array(id_array)]
     print(f"Reading data files to create {outfilename} ...")
-    for file in files:
-        value_array.append(np.array([line.split('\t')[col_idx] for line in open(file)]))
-        print("reading " + get_prefix(file))
-    print(f"Saving to {outfilename} ...")
-    dataframe = np.row_stack(value_array)
-    dataframe[1:, 0] = [get_prefix(file) for file in in_files]
-    pddf = pd.DataFrame(dataframe[1:, 1:], index=dataframe[1:, 0], columns=dataframe[0, 1:]).sort_index()
-    pddf.filter(regex="ENSG" if doUseGene else "ENST").to_csv(outfilename)
-    pddf.filter(regex="ERCC").to_csv(outfilename + ".ercc.csv")
 
+    with open(outfilename, "w") as ensg_output_file, open(outfilename + ".ercc.csv", "w") as ercc_output_file:
+        ensg_output_file.write(",".join([""] + id_array[1:]) + "\n")
+        ercc_output_file.write(",".join([""] + id_array[1:]) + "\n")
+        prefixes = [get_prefix(file) for file in in_files]
+        file_order = np.argsort(prefixes)
+        for file in np.array(in_files)[file_order]:
+            prefix = get_prefix(file)
+            print(f"reading {prefix}")
 
-for (filename, col_idx) in [(outcounts, 4), (outtpms, 5,)]:
+            df = pd.read_csv(file, sep='\t', header=None, usecols=[0, col_idx], names=['id', 'value'])
+            df['id'] = df['id'].str.strip('gene:').str.strip('transcript:')
+            df = df.set_index('id').transpose()
+            df.index = [prefix]
+
+            ensg_df = df.filter(regex="ENSG" if doUseGene else "ENST")
+            ercc_df = df.filter(regex="ERCC")
+
+            ensg_output_file.write(ensg_df.to_csv(header=False, index=True))
+            ercc_output_file.write(ercc_df.to_csv(header=False, index=True))
+
+    print(f"Data saved to {outfilename} and {outfilename}.ercc.csv")
+
+for (filename, col_idx) in [(outcounts, 4), (outtpms, 5)]:
     save_output(filename, ids, files, col_idx, doUseGene)
 
 print(f"Saving to {outn} ...")
 np.savetxt(outn, np.column_stack((ids[1:], names, biotypes)), delimiter=",", fmt="%s")
 
 print(f"Saving to {outids} ...")
-np.savetxt(outids, np.column_stack((list(transcript_id_to_gene.keys()), list(transcript_id_to_gene.values()))), delimiter=",", fmt="%s")
+np.savetxt(outids, 
+    np.column_stack((list(transcript_id_to_gene.keys()), 
+        list(transcript_id_to_gene.values()))), delimiter=",", fmt="%s")
 
 print("Done.")

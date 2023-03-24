@@ -34,17 +34,17 @@ rule SingleCellProteogenomics_copyResults:
             "../results/velocity/a.loom",
             "../results/velocity/a.obs_names.csv",
         ],
-    output: directory("../results/newinput/RNAData_bkup/")
+    output: directory("../results/RNAData_bkup/")
     conda: "../envs/downloads.yaml"
-    params: rnadir=lambda w, output: output[0].split("_")[0],
+    params: rnadir=lambda w, input: os.path.join(input[0], "RNAData")
     log: "../results/SingleCellProteogenomics_copyResults.log"
     benchmark: "../results/SingleCellProteogenomics_copyResults.benchmark"
     shell:
-        "(cp -r {params.rnadir}/* {output} && "
+        "(mkdir -p {output} && cp -r {params.rnadir}/* {output} && "
         "cp {input.quant} {input.ids} {input.velocity} {params.rnadir}) &> {log}"
 
 rule SingleCellProteogenomics:
-    input: "../results/newinput/RNAData_bkup/"
+    input: "../results/RNAData_bkup/"
     output: "../results/output/pickles/mockbulk_phases.npy"
     conda: "../../SingleCellProteogenomics/workflow/envs/enviro.yaml"
     log: "../results/output/1_ProteinCellCycleClusters.log"
