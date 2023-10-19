@@ -1,6 +1,6 @@
 import os
 
-INPUTID="149ICTtieYjuKWZoLwRLzimwff0n6eWqw"
+INPUTID="1yYvkZVXz2EnoWBrLYi5_hu4WVlnmuFWd"
 
 rule downloadInputs:
     output: directory("../results/input")
